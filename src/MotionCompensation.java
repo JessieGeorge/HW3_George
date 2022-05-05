@@ -27,6 +27,7 @@ public class MotionCompensation {
     // main interface function
     public int process(final String refName, final String tarName, final String mvName, final String resName, int n,
             int p, int optFast, int optSub) {
+    	System.out.println();
         // read reference & target images from PPM files
         MImage refImage = new MImage(refName);
         MImage tarImage = new MImage(tarName);
@@ -55,6 +56,42 @@ public class MotionCompensation {
 
     // TOFIX - add code to initialize
     public int init(int width, int height, int n, int p, int optFast, int optSub) {
+    	// padded to be divisible by n
+		if (width % n != 0) {
+			frameWidth = width + (n - (width % n));
+		} else {
+			frameWidth = width;
+		}
+		
+		if (height % n != 0) {
+			frameHeight = height + (n - (height % n));
+		} else {
+			frameHeight = height;
+		}
+    	
+        blockWidth = n; 
+        blockHeight = n;
+        
+        numBlockInX = width / n;
+        numBlockInY = height / n;
+        
+        searchLimit = p;
+        
+        searchFast = optFast;
+        searchSubPel = optSub;
+        
+        // REMOVETHIS
+        System.out.println("width = " + width);
+        System.out.println("frameWidth = " + frameWidth);
+        System.out.println("height = " + height);
+        System.out.println("frameHeight = " + frameHeight);
+        System.out.println("blockWidth = " + blockWidth);
+        System.out.println("blockHeight = " + blockHeight);
+        System.out.println("numBlockInX = " + numBlockInX);
+        System.out.println("numBlockInY = " + numBlockInY);
+        System.out.println("searchLimit = " + searchLimit);
+        System.out.println("searchFast = " + searchFast);
+        System.out.println("searchSubPel = " + searchSubPel);
         return 0;
     }
 
