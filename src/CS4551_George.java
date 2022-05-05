@@ -8,7 +8,13 @@
 import java.util.Scanner;
 
 public class CS4551_George {
-    public static final String videoFrameName = "../VideoFrames/Walk_%03d.ppm";
+	
+	/*
+	 * I'm using Windows. 
+	 * The template path did not work for me. So I edited it.
+	 */
+	public static final String currentDir = System.getProperty("user.dir");
+    public static final String videoFrameName = currentDir + "\\VideoFrames\\Walk_%03d.ppm";
     
     public static Scanner in = new Scanner(System.in);
     
