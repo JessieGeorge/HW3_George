@@ -47,6 +47,8 @@ public class BlockMotionSearch {
     	FileWriter myFWriter = new FileWriter("Test-full-search-ref-blocks.txt"); 
     	int countSearchBlock = 0;
     	
+    	double minMSD = Double.MAX_VALUE;
+    	
     	// Using formula from lec12 pdf, page 11, first slide.
     	for (int y = 0; y < (2 * searchLimH + 1); y++) {
     		for (int x = 0; x < (2 * searchLimW + 1); x++) {
@@ -80,8 +82,18 @@ public class BlockMotionSearch {
             		}
             		myFWriter.write("\n");
             		
+            		int SSD = getSSD(tarBlock, refBlock);
+            		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
             		
-            		
+            		// best match
+            		if (MSD < minMSD) {
+            			minMSD = MSD;
+            			/* the position of the top left pixel of 
+            			 * the best matching block in the reference image
+            			 */
+            			bestPos[0] = refPosY;
+                		bestPos[1] = refPosX;
+            		}
     			} else {
     				// REMOVETHIS
     				myFWriter.write("INvalid\n");
@@ -121,8 +133,16 @@ public class BlockMotionSearch {
     	}
     }
 
-    // TOFIX - add code to compute MSD between two blocks
-    public int getMSD(final int tarBlock[][], final int refBlock[][]) {
-        return 0;
+    // compute SSD between two blocks
+    public int getSSD(final int tarBlock[][], final int refBlock[][]) {
+    	int SSD = 0; // sum of the square difference
+    	for (int j = 0; j < blockHeight; j++) {
+    		for (int i = 0; i < blockWidth; i++) {
+    			int diff = tarBlock[j][i] - refBlock[j][i];
+    			SSD += (int)Math.pow(diff, 2);
+    		}
+    	}
+    	
+        return SSD;
     }
 }
