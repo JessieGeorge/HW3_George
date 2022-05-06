@@ -111,6 +111,8 @@ public class MotionCompensation {
         int[][] resBlock = new int[blockHeight][blockWidth];
         int[] currPos = new int[2];
         int[] bestPos = new int[2];
+        int minError = Integer.MAX_VALUE;
+        int maxError = 0;
         
         int[][] testTargetFrame = new int[frameHeight][frameWidth]; // REMOVETHIS
         
@@ -138,7 +140,7 @@ public class MotionCompensation {
 		myRWriter.write("\n");
 		myRWriter.close();
 		
-		FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
+		//FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
 		int countBlocks = 0; // REMOVETHIS?
         for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
         	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
@@ -179,9 +181,39 @@ public class MotionCompensation {
         		motionVectors[numBlockY][numBlockX][0] = dy;
         		motionVectors[numBlockY][numBlockX][1] = dx;
         		
+        		// residual
+        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
+        				resBlock[j][i] = err;
+        				if (err < minError) {
+        					minError = err;
+        				} else if (err > maxError) {
+        					maxError = err;
+        				}
+        			}
+        		}
+        		
+        		setBlock(residualFrame, resBlock, x, y);
         	}
+        
+        	// normalize?
         }
         
+        // REMOVETHIS
+        FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", residualFrame[y][x]);
+				 myResWriter.write(padded + " ");
+			}
+			myResWriter.write("\n");
+		}
+		myResWriter.write("\n");
+		myResWriter.close();
+		
+        /*
         // REMOVETHIS
         FileWriter myTWriter = new FileWriter("Test-restore-tar-frame.txt"); 
 		for (int y = 0; y < frameHeight; y++) {
@@ -196,7 +228,9 @@ public class MotionCompensation {
 		System.out.println("targetFrame dimensions = " + targetFrame.length + " x " + targetFrame[0].length);
 		System.out.println("testTargetFrame dimensions = " + testTargetFrame.length + " x " + testTargetFrame[0].length);
         System.out.println("Restored with setBlock? " + Arrays.deepEquals(targetFrame, testTargetFrame));
-        myBWriter.close();
+        */
+        
+        //myBWriter.close();
         //System.exit(1); // REMOVETHIS
     }
 
