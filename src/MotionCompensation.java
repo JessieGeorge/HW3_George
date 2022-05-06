@@ -143,9 +143,11 @@ public class MotionCompensation {
         for (int y = 0; y < frameHeight; y += blockHeight) {
         	for (int x = 0; x < frameWidth; x += blockWidth) {
         		
+        		/*
         		// TEST REMOVETHIS!!!
-        		y = 2;
-        		x = 2;
+        		y = (144 - 8);
+        		x = 0;
+        		*/
         		
         		countBlocks++;
         		getBlock(targetFrame, tarBlock, x, y);
@@ -153,7 +155,7 @@ public class MotionCompensation {
         		currPos[1] = x;
         		
         		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
-        		System.exit(1); // REMOVETHIS
+        		//System.exit(1); // REMOVETHIS
         		
         		/*
         		// REMOVETHIS

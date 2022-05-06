@@ -80,6 +80,8 @@ public class BlockMotionSearch {
             		}
             		myFWriter.write("\n");
             		
+            		
+            		
     			} else {
     				// REMOVETHIS
     				myFWriter.write("INvalid\n");
@@ -110,7 +112,7 @@ public class BlockMotionSearch {
         		&& (blkPosY >= 0 && blkPosY < frameHeight);
     }
 
-    // TOFIX - add code to get one reference block from frame
+    // get one reference block from frame
     protected void getRefBlock(final int refFrame[][], int refBlock[][], int refPosX, int refPosY, int subLevel) {
     	for (int j = refPosY; j < refPosY + blockHeight; j++) {
     		for (int i = refPosX; i < refPosX + blockWidth; i++) {
