@@ -19,7 +19,7 @@ public class MotionCompensation {
     private int blockWidth, blockHeight; // block resolution
     private int numBlockInX, numBlockInY; // number of blocks in X/Y direction
     private int searchLimit; // search limit
-    private int searchFast; // binary boolean i think
+    private int searchFast; // binary boolean
     private int searchSubPel;
 
     // main interface function
@@ -106,7 +106,20 @@ public class MotionCompensation {
     // TOFIX - add code to search and compensate one frame
     protected void searchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
             int residualFrame[][]) throws IOException {
-        int[][] refBlock = new int[blockHeight][blockWidth];
+    	
+    	if (searchFast == 1) {
+    		fastSearchCompensate(referenceFrame, targetFrame, 
+    				motionVectors, residualFrame);
+    	} else {
+    		fullSearchCompensate(referenceFrame, targetFrame, 
+    				motionVectors, residualFrame);
+    	}
+        
+    }
+    
+    protected void fullSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
+            int residualFrame[][]) throws IOException {
+    	int[][] refBlock = new int[blockHeight][blockWidth];
         int[][] tarBlock = new int[blockHeight][blockWidth];
         int[][] resBlock = new int[blockHeight][blockWidth];
         int[] currPos = new int[2];
@@ -156,11 +169,138 @@ public class MotionCompensation {
         		currPos[0] = y;
         		currPos[1] = x;
         		
-        		if (searchFast == 1) {
-        			searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos);
-        		} else {
-        			searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		
+        		//System.exit(1); // REMOVETHIS
+        		
+        		/*
+        		// REMOVETHIS
+        		myBWriter.write("BLOCK #" + countBlocks + "\n");
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				String padded = String.format("%03d", tarBlock[j][i]);
+        				myBWriter.write(padded + " ");
+        			}
+        			myBWriter.write("\n");
         		}
+        		myBWriter.write("\n");
+        		
+        		// REMOVETHIS
+        		setBlock(testTargetFrame, tarBlock, x, y);
+        		*/
+        		
+        		// motion vector
+        		int dy = currPos[0] - bestPos[0];
+        		int dx = currPos[1] - bestPos[1];
+        		motionVectors[numBlockY][numBlockX][0] = dy;
+        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		
+        		// residual
+        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
+        				resBlock[j][i] = err;
+        				if (err < minError) {
+        					minError = err;
+        				} else if (err > maxError) {
+        					maxError = err;
+        				}
+        			}
+        		}
+        		
+        		setBlock(residualFrame, resBlock, x, y);
+        	}
+        }
+        
+        // REMOVETHIS
+        FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", residualFrame[y][x]);
+				 myResWriter.write(padded + " ");
+			}
+			myResWriter.write("\n");
+		}
+		myResWriter.write("\n");
+		myResWriter.close();
+		
+        /*
+        // REMOVETHIS
+        FileWriter myTWriter = new FileWriter("Test-restore-tar-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", testTargetFrame[y][x]);
+				 myTWriter.write(padded + " ");
+			}
+			myTWriter.write("\n");
+		}
+		myTWriter.write("\n");
+		myTWriter.close();
+		System.out.println("targetFrame dimensions = " + targetFrame.length + " x " + targetFrame[0].length);
+		System.out.println("testTargetFrame dimensions = " + testTargetFrame.length + " x " + testTargetFrame[0].length);
+        System.out.println("Restored with setBlock? " + Arrays.deepEquals(targetFrame, testTargetFrame));
+        */
+        
+        //myBWriter.close();
+        //System.exit(1); // REMOVETHIS
+		
+		normalizeResidual(residualFrame, minError, maxError);
+    }
+    
+    protected void fastSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
+            int residualFrame[][]) throws IOException {
+    	int[][] refBlock = new int[blockHeight][blockWidth];
+        int[][] tarBlock = new int[blockHeight][blockWidth];
+        int[][] resBlock = new int[blockHeight][blockWidth];
+        int[] currPos = new int[2];
+        int[] bestPos = new int[2];
+        int minError = Integer.MAX_VALUE;
+        int maxError = 0;
+        
+        int[][] testTargetFrame = new int[frameHeight][frameWidth]; // REMOVETHIS
+        
+        // REMOVETHIS
+        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", targetFrame[y][x]);
+				 myWriter.write(padded + " ");
+			}
+			myWriter.write("\n");
+		}
+		myWriter.write("\n");
+		myWriter.close();
+		
+		// REMOVETHIS
+        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", referenceFrame[y][x]);
+				 myRWriter.write(padded + " ");
+			}
+			myRWriter.write("\n");
+		}
+		myRWriter.write("\n");
+		myRWriter.close();
+		
+		//FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
+		int countBlocks = 0; // REMOVETHIS?
+        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
+        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
+        		
+        		/*
+        		// TEST REMOVETHIS!!!
+        		y = (144 - 8);
+        		x = 0;
+        		*/
+        		
+        		countBlocks++;
+        		getBlock(targetFrame, tarBlock, x, y);
+        		currPos[0] = y;
+        		currPos[1] = x;
+        		
+        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
         		
         		//System.exit(1); // REMOVETHIS
         		
