@@ -108,21 +108,31 @@ public class BlockMotionSearch {
     }
 
     // TOFIX - add code to conduct logarithmic motion search for one target block
-    public int fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist) throws IOException {
+    public int fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
-    	FileWriter myFWriter = new FileWriter("Test-full-search-ref-blocks.txt"); 
+    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt"); 
     	int countSearchBlock = 0;
     	
     	double minMSD = Double.MAX_VALUE;
     	
     	// Using formula from lec12 pdf, page 11, first slide.
-    	for (int y = 0; y < (2 * searchLimH + 1); y++) {
-    		for (int x = 0; x < (2 * searchLimW + 1); x++) {
-    			int refPosY = startPos[0] - (searchLimH - y);
-    			int refPosX = startPos[1] - (searchLimW - x);
+    	for (int y = 0; y < 3; y++) {
+    		for (int x = 0; x < 3; x++) {
     			
-    			// TODO: what is subLevel for full search?
+    			if (y == 1 && x == 1 && !useCenter) {
+    				/*
+    				 *  don't consider the center, 
+    				 *  because we already considered it when we
+    				 *  got the best match in the previous round
+    				 */
+    				continue;
+    			}
+    			
+    			int refPosY = startPos[0] - (dist - (y * dist));
+    			int refPosX = startPos[1] - (dist - (x * dist));
+    			
+    			// TODO: what is subLevel for fast search?
     			int subLevel = 0;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);

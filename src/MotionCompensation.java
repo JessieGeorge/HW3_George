@@ -287,6 +287,7 @@ public class MotionCompensation {
 		
 		//FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt");
 		int countMatch = 0;
+		boolean useCenter = true; // only the first time
 		int dist = searchLimit;
 		int y, x;
 		while(true) {
@@ -308,7 +309,8 @@ public class MotionCompensation {
     			break;
     		}
     		
-    		searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist);
+    		searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
+    		useCenter = false;
     		havePrevBest = true;
     		//System.exit(1); // REMOVETHIS
     		
