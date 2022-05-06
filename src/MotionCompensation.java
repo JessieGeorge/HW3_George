@@ -10,9 +10,11 @@
  *******************************************************/
 
 import java.io.*;
+import java.util.Arrays;
 
 public class MotionCompensation {
     private BlockMotionSearch searcher;
+    private int width, height;
     private int frameWidth, frameHeight; // frame resolution
     private int blockWidth, blockHeight; // block resolution
     private int numBlockInX, numBlockInY; // number of blocks in X/Y direction
@@ -32,8 +34,8 @@ public class MotionCompensation {
         MImage refImage = new MImage(refName);
         MImage tarImage = new MImage(tarName);
         // initialize
-        final int width = refImage.getW();
-        final int height = refImage.getH();
+        width = refImage.getW();
+        height = refImage.getH();
         init(width, height, n, p, optFast, optSub);
         // allocate work space
         int[][] refFrame = new int[frameHeight][frameWidth];
@@ -41,7 +43,15 @@ public class MotionCompensation {
         int[][] resFrame = new int[frameHeight][frameWidth];
         int[][][] motionVectors = new int[numBlockInY][numBlockInX][2];
         // convert images to gray-scale frames
+        //System.out.println("refName = " + refName); // REMOVETHIS
         image2Frame(refImage, refFrame);
+        //System.out.println("refFrame = " + Arrays.deepToString(refFrame)); // REMOVETHIS
+        /*
+        MImage testImage = new MImage(width, height); // REMOVETHIS
+        frame2Image(refFrame, testImage); // REMOVETHIS
+        testImage.write2PPM("testRef.ppm"); // REMOVETHIS
+        */
+        
         image2Frame(tarImage, tarFrame);
         // conduct motion search and compensation
         searchCompensate(refFrame, tarFrame, motionVectors, resFrame);
@@ -54,7 +64,7 @@ public class MotionCompensation {
         return 0;
     }
 
-    // TOFIX - add code to initialize
+    // initialize
     public int init(int width, int height, int n, int p, int optFast, int optSub) {
     	// padded to be divisible by n
 		if (width % n != 0) {
@@ -107,10 +117,30 @@ public class MotionCompensation {
 
     // TOFIX - add code to convert image to gray-scale frame
     protected void image2Frame(final MImage image, int frame[][]) {
+    	
+    	int rgb[] = new int[3];
+    	for (int y = 0; y < height; y++) {
+    		for (int x = 0; x < width; x++) {
+    			image.getPixel(x, y, rgb);
+    			frame[y][x] = (int)(Math.round(0.299 * rgb[0] 
+    							+ 0.587 * rgb[1] 
+    							+ 0.114 * rgb[2]));
+    		}
+    	}
     }
 
     // TOFIX - add code to convert gray-scale frame to image
     protected void frame2Image(final int frame[][], MImage image) {
+    	
+    	int rgb[] = new int[3];
+    	for (int y = 0; y < frameHeight; y++) {
+    		for (int x = 0; x < frameWidth; x++) {
+    			rgb[0] = frame[y][x];
+    			rgb[1] = frame[y][x];
+    			rgb[2] = frame[y][x];
+    			image.setPixel(x, y, rgb);
+    		}
+    	}
     }
 
     // TOFIX - add code to normalize residual frame
