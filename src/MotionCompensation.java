@@ -190,8 +190,8 @@ public class MotionCompensation {
         		*/
         		
         		// motion vector
-        		int dy = currPos[0] - bestPos[0];
-        		int dx = currPos[1] - bestPos[1];
+        		int dy = y - bestPos[0];
+        		int dx = x - bestPos[1];
         		motionVectors[numBlockY][numBlockX][0] = dy;
         		motionVectors[numBlockY][numBlockX][1] = dx;
         		
@@ -285,75 +285,80 @@ public class MotionCompensation {
 		myRWriter.write("\n");
 		myRWriter.close();
 		
-		//FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt");
-		int countMatch = 0;
-		boolean useCenter = true; // only the first time
-		int dist = searchLimit;
-		int y, x;
-		while(true) {
-			if (havePrevBest) {
-				y = bestPos[0];
-				x = bestPos[1];
-			} else {
-				// center of frame
-				y = frameHeight / 2;
-	    		x = frameWidth / 2;
-			}
-			
-    		getBlock(targetFrame, tarBlock, x, y);
-    		currPos[0] = y;
-    		currPos[1] = x;
-    		
-    		dist = dist / 2;
-    		if (dist == 0) {
-    			break;
-    		}
-    		
-    		searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
-    		useCenter = false;
-    		havePrevBest = true;
-    		//System.exit(1); // REMOVETHIS
-    		
-    		/*
-    		// REMOVETHIS
-    		myBWriter.write("BLOCK #" + countBlocks + "\n");
-    		for (int j = 0; j < blockHeight; j++) {
-    			for (int i = 0; i < blockWidth; i++) {
-    				String padded = String.format("%03d", tarBlock[j][i]);
-    				myBWriter.write(padded + " ");
-    			}
-    			myBWriter.write("\n");
-    		}
-    		myBWriter.write("\n");
-    		
-    		// REMOVETHIS
-    		setBlock(testTargetFrame, tarBlock, x, y);
-    		*/
-    		
-    		// motion vector
-    		int dy = currPos[0] - bestPos[0];
-    		int dx = currPos[1] - bestPos[1];
-    		motionVectors[0][countMatch][0] = dy;
-    		motionVectors[0][countMatch][1] = dx;
-    		countMatch++;
-    		
-    		// residual
-    		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
-    		for (int j = 0; j < blockHeight; j++) {
-    			for (int i = 0; i < blockWidth; i++) {
-    				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
-    				resBlock[j][i] = err;
-    				if (err < minError) {
-    					minError = err;
-    				} else if (err > maxError) {
-    					maxError = err;
-    				}
-    			}
-    		}
-    		
-    		setBlock(residualFrame, resBlock, x, y);
-        }
-        
+		for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
+        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
+        		//FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt");
+        		int countMatch = 0; // REMOVETHIS?
+        		boolean useCenter = true; // only the first time
+        		int dist = searchLimit * 2;
+        		int v, u;
+        		while(true) {
+        			
+        			dist = dist / 2;
+            		if (dist == 0) {
+            			break;
+            		}
+            		
+        			if (havePrevBest) {
+        				v = bestPos[0];
+        				u = bestPos[1];
+        			} else {
+        				v = y;
+        	    		u = x;
+        			}
+        			
+            		getBlock(targetFrame, tarBlock, u, v);
+            		currPos[0] = v;
+            		currPos[1] = u;
+            		
+            		searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
+            		useCenter = false;
+            		havePrevBest = true;
+            		//Svstem.euit(1); // REMOVETHIS
+            		
+            		/*
+            		// REMOVETHIS
+            		mvBWriter.write("BLOCK #" + countBlocks + "\n");
+            		for (int j = 0; j < blockHeight; j++) {
+            			for (int i = 0; i < blockWidth; i++) {
+            				String padded = String.format("%03d", tarBlock[j][i]);
+            				mvBWriter.write(padded + " ");
+            			}
+            			mvBWriter.write("\n");
+            		}
+            		mvBWriter.write("\n");
+            		
+            		// REMOVETHIS
+            		setBlock(testTargetFrame, tarBlock, u, v);
+            		*/
+            		
+                }
+        		
+        		// motion vector
+        		int dy = y - bestPos[0];
+        		int dx = x - bestPos[1];
+        		motionVectors[numBlockY][numBlockX][0] = dy;
+        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		countMatch++;
+        		
+        		// residual
+        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
+        				resBlock[j][i] = err;
+        				if (err < minError) {
+        					minError = err;
+        				} else if (err > maxError) {
+        					maxError = err;
+        				}
+        			}
+        		}
+        		
+        		setBlock(residualFrame, resBlock, x, y);
+        	}
+		}
+		
 		/*
         // REMOVETHIS
         FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
