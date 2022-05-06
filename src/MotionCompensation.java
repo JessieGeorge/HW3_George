@@ -19,7 +19,7 @@ public class MotionCompensation {
     private int blockWidth, blockHeight; // block resolution
     private int numBlockInX, numBlockInY; // number of blocks in X/Y direction
     private int searchLimit; // search limit
-    private int searchFast;
+    private int searchFast; // binary boolean i think
     private int searchSubPel;
 
     // main interface function
@@ -156,7 +156,12 @@ public class MotionCompensation {
         		currPos[0] = y;
         		currPos[1] = x;
         		
-        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		if (searchFast == 1) {
+        			searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		} else {
+        			searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		}
+        		
         		//System.exit(1); // REMOVETHIS
         		
         		/*

@@ -142,6 +142,13 @@ public class CS4551_George {
             String resName = String.format("res_%03d.ppm", curNo);
             coder.process(refName, tarName, mvName, resName, n, p, fast, sub);
         }
+        
+        /* log base 2 of p because 
+         * we keep halving p for the distance between neighbors, 
+         * + 1 because we stop after distance = 1 
+         */
+        int numFastMatches = (int)(Math.log(p) / Math.log(2)) + 1;
+        System.out.println("\nFast search with p = " + p + " so Number of matches performed = " + numFastMatches);
         return 0;
     }
 }

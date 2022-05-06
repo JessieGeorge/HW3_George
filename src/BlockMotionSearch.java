@@ -55,7 +55,7 @@ public class BlockMotionSearch {
     			int refPosY = startPos[0] - (searchLimH - y);
     			int refPosX = startPos[1] - (searchLimW - x);
     			
-    			// TODO: what is sublevel for full search?
+    			// TODO: what is subLevel for full search?
     			int subLevel = 0;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
