@@ -12,7 +12,7 @@
 public class BlockMotionSearch {
     private int frameWidth, frameHeight; // frame resolution
     private int blockWidth, blockHeight; // block resolution
-    private int searchLimH, searchLimV; // search limit
+    private int searchLimW, searchLimH; // search limit
 
     public BlockMotionSearch(int frameWidth, int frameHeight, int n, int p) {
         setFrameSize(frameWidth, frameHeight);
@@ -33,13 +33,26 @@ public class BlockMotionSearch {
     }
 
     // set search limit
-    public void setSearchLimit(int limH, int limV) {
+    public void setSearchLimit(int limW, int limH) {
+    	searchLimW = limW;
         searchLimH = limH;
-        searchLimV = limV;
     }
 
     // TOFIX - add code to conduct full motion search for one target block
     public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) {
+    	int[][] refBlock = new int[blockHeight][blockWidth];
+    	// Using formula from lec12 pdf, page 11, first slide.
+    	for (int y = 0; y < (2 * searchLimH + 1); y++) {
+    		for (int x = 0; x < (2 * searchLimW + 1); x++) {
+    			int refPosY = startPos[0] - (searchLimH - y);
+    			int refPosX = startPos[1] - (searchLimW - x);
+    			
+    			// TODO: check is valid here for boundary of block?
+    			
+    			getRefBlock(refFrame, refBlock, refPosX, refPosY, 0); // TODO: what is sublevel for full search?
+    			
+    		}
+    	}
         return 0;
     }
 
@@ -62,8 +75,8 @@ public class BlockMotionSearch {
     protected void getRefBlock(final int refFrame[][], int refBlock[][], int refPosX, int refPosY, int subLevel) {
     }
 
-    // TOFIX - add code to compute SSD between two blocks
-    public int getSSD(final int tarBlock[][], final int refBlock[][]) {
+    // TOFIX - add code to compute MSD between two blocks
+    public int getMSD(final int tarBlock[][], final int refBlock[][]) {
         return 0;
     }
 }

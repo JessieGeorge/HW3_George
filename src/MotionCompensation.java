@@ -132,7 +132,11 @@ public class MotionCompensation {
         	for (int x = 0; x < frameWidth; x += blockWidth) {
         		countBlocks++;
         		getBlock(targetFrame, tarBlock, x, y);
+        		currPos[0] = y;
+        		currPos[1] = x;
+        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
         		
+        		/*
         		// REMOVETHIS
         		myBWriter.write("BLOCK #" + countBlocks + "\n");
         		for (int j = 0; j < blockHeight; j++) {
@@ -146,6 +150,7 @@ public class MotionCompensation {
         		
         		// REMOVETHIS
         		setBlock(testTargetFrame, tarBlock, x, y);
+        		*/
         	}
         }
         
