@@ -5,9 +5,11 @@
  * Spring 2020 Homework #3 Framework by Yi Zhao
  *******************************************************/
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class CS4551_George {
+	// TODO: Remove throws IOException from functions
 	
 	/*
 	 * I'm using Windows. 
@@ -18,7 +20,7 @@ public class CS4551_George {
     
     public static Scanner in = new Scanner(System.in);
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
 
         // the program does not expect command line argument
         // if there is any command line argument, exit the program
@@ -105,7 +107,7 @@ public class CS4551_George {
         return p;
     }
 
-    public static int conductBlockMotionCompensation(String vidName, Scanner in) {
+    public static int conductBlockMotionCompensation(String vidName, Scanner in) throws IOException {
         // get parameter input from user
         int n = getN();
         int p = getP();
@@ -124,7 +126,7 @@ public class CS4551_George {
         return 0;
     }
 
-    public static int conductFastMotionCompensation(String vidName, Scanner in) {
+    public static int conductFastMotionCompensation(String vidName, Scanner in) throws IOException {
     	// get parameter input from user
         int n = getN();
         int p = getP();

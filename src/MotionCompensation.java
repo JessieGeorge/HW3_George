@@ -28,7 +28,7 @@ public class MotionCompensation {
 
     // main interface function
     public int process(final String refName, final String tarName, final String mvName, final String resName, int n,
-            int p, int optFast, int optSub) {
+            int p, int optFast, int optSub) throws IOException {
     	System.out.println();
         // read reference & target images from PPM files
         MImage refImage = new MImage(refName);
@@ -107,12 +107,49 @@ public class MotionCompensation {
 
     // TOFIX - add code to search and compensate one frame
     protected void searchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
-            int residualFrame[][]) {
-        int[][] refBlock;
-        int[][] tarBlock;
-        int[][] resBlock;
+            int residualFrame[][]) throws IOException {
+        int[][] refBlock = new int[blockHeight][blockWidth];
+        int[][] tarBlock = new int[blockHeight][blockWidth];
+        int[][] resBlock = new int[blockHeight][blockWidth];
         int[] currPos = new int[2];
         int[] bestPos = new int[2];
+        
+        // REMOVETHIS
+        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", targetFrame[y][x]);
+				 myWriter.write(padded + " ");
+			}
+			myWriter.write("\n");
+		}
+		myWriter.write("\n");
+		myWriter.close();
+		
+		FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
+		int countBlocks = 0; // REMOVETHIS?
+        for (int y = 0; y < frameHeight; y += blockHeight) {
+        	for (int x = 0; x < frameWidth; x += blockWidth) {
+        		countBlocks++;
+        		getBlock(targetFrame, tarBlock, x, y);
+        		
+        		// RMEOVETHIS
+        		myBWriter.write("BLOCK #" + countBlocks + "\n");
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				String padded = String.format("%03d", tarBlock[j][i]);
+        				myBWriter.write(padded + " ");
+        			}
+        			myBWriter.write("\n");
+        		}
+        		myBWriter.write("\n");
+        		
+        		
+        	}
+        }
+        
+        myBWriter.close();
+        System.exit(1); // REMOVETHIS
     }
 
     // TOFIX - add code to convert image to gray-scale frame
@@ -149,13 +186,25 @@ public class MotionCompensation {
 
     // TOFIX - add code to get one block from frame
     protected void getBlock(final int frame[][], int block[][], int x, int y) {
+    	
+    	for (int j = y; j < y + blockHeight; j++) {
+    		for (int i = x; i < x + blockWidth; i++) {
+    			block[j - y][i - x] = frame[j][i];
+    		}
+    	}
     }
 
     // TOFIX - add code to set one block in frame
     protected void setBlock(int frame[][], final int block[][], int x, int y) {
+    	
+    	for (int j = y; j < y + blockHeight; j++) {
+    		for (int i = x; i < x + blockWidth; i++) {
+    			frame[j][i] = block[j - y][i - x];
+    		}
+    	}
     }
 
-    // TOFIX - add code to save motion vectors
+    // save motion vectors
     protected int saveMotion(final String mvName, final int motion[][][]) {
     	try {
     		File f = new File(mvName);
