@@ -103,7 +103,7 @@ public class BlockMotionSearch {
     	}
     	
     	myFWriter.close();
-        System.exit(1); // REMOVETHIS
+        //System.exit(1); // REMOVETHIS
         return 0;
     }
 

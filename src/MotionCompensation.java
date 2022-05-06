@@ -140,8 +140,8 @@ public class MotionCompensation {
 		
 		FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
 		int countBlocks = 0; // REMOVETHIS?
-        for (int y = 0; y < frameHeight; y += blockHeight) {
-        	for (int x = 0; x < frameWidth; x += blockWidth) {
+        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
+        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
         		
         		/*
         		// TEST REMOVETHIS!!!
@@ -172,6 +172,13 @@ public class MotionCompensation {
         		// REMOVETHIS
         		setBlock(testTargetFrame, tarBlock, x, y);
         		*/
+        		
+        		// motion vector
+        		int dy = currPos[0] - bestPos[0];
+        		int dx = currPos[1] - bestPos[1];
+        		motionVectors[numBlockY][numBlockX][0] = dy;
+        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		
         	}
         }
         
@@ -190,7 +197,7 @@ public class MotionCompensation {
 		System.out.println("testTargetFrame dimensions = " + testTargetFrame.length + " x " + testTargetFrame[0].length);
         System.out.println("Restored with setBlock? " + Arrays.deepEquals(targetFrame, testTargetFrame));
         myBWriter.close();
-        System.exit(1); // REMOVETHIS
+        //System.exit(1); // REMOVETHIS
     }
 
     // Convert image to gray-scale frame
@@ -259,7 +266,13 @@ public class MotionCompensation {
     	
     	try {
     		FileWriter myWriter = new FileWriter(mvName);
-    		myWriter.write(Arrays.deepToString(motion));
+    		for (int numBlockY = 0; numBlockY < numBlockInY; numBlockY++) {
+    			for (int numBlockX = 0; numBlockX < numBlockInX; numBlockX++) {
+    				myWriter.write("motion["+numBlockY+"]["+numBlockX+"] = " + Arrays.toString(motion[numBlockY][numBlockX]));
+    				myWriter.write("\n");
+    			}
+    		}
+    		
     		myWriter.close();
     		System.out.println("Wrote motion vectors to " + mvName);
 	    } catch (IOException e) {
