@@ -157,6 +157,26 @@ public class MotionCompensation {
 
     // TOFIX - add code to save motion vectors
     protected int saveMotion(final String mvName, final int motion[][][]) {
+    	try {
+    		File f = new File(mvName);
+    		if (f.createNewFile()) {
+    			System.out.println("Created file: " + mvName);
+    		}
+	    } catch (IOException e) {
+	    	System.out.println("An error occurred.");
+	    	e.printStackTrace();
+	    }
+    	
+    	try {
+    		FileWriter myWriter = new FileWriter(mvName);
+    		myWriter.write(Arrays.deepToString(motion));
+    		myWriter.close();
+    		System.out.println("Wrote motion vectors to " + mvName);
+	    } catch (IOException e) {
+	    	System.out.println("An error occurred.");
+	    	e.printStackTrace();
+	    }
+    	
         return 0;
     }
 }
