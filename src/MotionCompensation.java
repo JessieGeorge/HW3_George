@@ -197,8 +197,6 @@ public class MotionCompensation {
         		
         		setBlock(residualFrame, resBlock, x, y);
         	}
-        
-        	// normalize?
         }
         
         // REMOVETHIS
@@ -232,6 +230,8 @@ public class MotionCompensation {
         
         //myBWriter.close();
         //System.exit(1); // REMOVETHIS
+		
+		normalizeResidual(residualFrame, minError, maxError);
     }
 
     // Convert image to gray-scale frame
@@ -263,7 +263,34 @@ public class MotionCompensation {
     }
 
     // TOFIX - add code to normalize residual frame
-    protected void normalizeResidual(int resFrame[][]) {
+    protected void normalizeResidual(int resFrame[][], int minError, int maxError) throws IOException {
+    	
+    	// REMOVETHIS
+    	System.out.println("maxError = " + maxError);
+    	System.out.println("minError = " + minError);
+    	
+    	int scaledError = 0;
+    	double range = maxError - minError; // double type for division
+    	for (int y = 0; y < frameHeight; y++) {
+    		for (int x = 0; x < frameWidth; x++) {
+    			scaledError = (int)Math.round((resFrame[y][x] - minError) / range * 255);
+    			resFrame[y][x] = scaledError; 
+    		}
+    	}
+    	
+    	// REMOVETHIS
+    	FileWriter myResWriter = new FileWriter("Test-scaled-residual-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", resFrame[y][x]);
+				 myResWriter.write(padded + " ");
+			}
+			myResWriter.write("\n");
+		}
+		myResWriter.write("\n");
+		myResWriter.close();
+		//System.exit(1); // REMOVETHIS
+    	
     }
 
     // Get one block from frame
