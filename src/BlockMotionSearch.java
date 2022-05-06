@@ -1,3 +1,5 @@
+import java.io.FileWriter;
+import java.io.IOException;
 
 /*******************************************************
  * CS4551 Multimedia Software Systems
@@ -39,8 +41,12 @@ public class BlockMotionSearch {
     }
 
     // TOFIX - add code to conduct full motion search for one target block
-    public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) {
+    public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
+    	
+    	FileWriter myFWriter = new FileWriter("Test-full-search-ref-blocks.txt"); 
+    	int countSearchBlock = 0;
+    	
     	// Using formula from lec12 pdf, page 11, first slide.
     	for (int y = 0; y < (2 * searchLimH + 1); y++) {
     		for (int x = 0; x < (2 * searchLimW + 1); x++) {
@@ -58,12 +64,32 @@ public class BlockMotionSearch {
     			boolean isValidBlockBoundary = topLeft && topRight 
     											&& bottomLeft && bottomRight;
     			
+    			countSearchBlock++;
+    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			if(isValidBlockBoundary) {
+    				myFWriter.write("valid\n");
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
+    				
+    				// REMOVETHIS
+            		for (int j = 0; j < blockHeight; j++) {
+            			for (int i = 0; i < blockWidth; i++) {
+            				String padded = String.format("%03d", refBlock[j][i]);
+            				myFWriter.write(padded + " ");
+            			}
+            			myFWriter.write("\n");
+            		}
+            		myFWriter.write("\n");
+            		
+    			} else {
+    				// REMOVETHIS
+    				myFWriter.write("INvalid\n");
     			}
     			
     		}
     	}
+    	
+    	myFWriter.close();
+        System.exit(1); // REMOVETHIS
         return 0;
     }
 
@@ -77,9 +103,11 @@ public class BlockMotionSearch {
         return 0;
     }
 
-    // TOFIX - add code to check validity of block position
+    // check validity of block position
     public boolean isValidBlockPos(final int blkPosX, final int blkPosY, final int subLevel) {
-        return false;
+    	// fits within the dimension of the reference frame
+        return (blkPosX >= 0 && blkPosX < frameWidth) 
+        		&& (blkPosY >= 0 && blkPosY < frameHeight);
     }
 
     // TOFIX - add code to get one reference block from frame

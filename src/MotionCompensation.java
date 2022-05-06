@@ -126,15 +126,34 @@ public class MotionCompensation {
 		myWriter.write("\n");
 		myWriter.close();
 		
+		// REMOVETHIS
+        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", referenceFrame[y][x]);
+				 myRWriter.write(padded + " ");
+			}
+			myRWriter.write("\n");
+		}
+		myRWriter.write("\n");
+		myRWriter.close();
+		
 		FileWriter myBWriter = new FileWriter("Test-tar-frame-blocks.txt"); 
 		int countBlocks = 0; // REMOVETHIS?
         for (int y = 0; y < frameHeight; y += blockHeight) {
         	for (int x = 0; x < frameWidth; x += blockWidth) {
+        		
+        		// TEST REMOVETHIS!!!
+        		y = 2;
+        		x = 2;
+        		
         		countBlocks++;
         		getBlock(targetFrame, tarBlock, x, y);
         		currPos[0] = y;
         		currPos[1] = x;
+        		
         		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		System.exit(1); // REMOVETHIS
         		
         		/*
         		// REMOVETHIS
