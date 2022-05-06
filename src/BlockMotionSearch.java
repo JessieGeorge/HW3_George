@@ -40,7 +40,7 @@ public class BlockMotionSearch {
         searchLimH = limH;
     }
 
-    // TOFIX - add code to conduct full motion search for one target block
+    // full motion search for one target block
     public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	

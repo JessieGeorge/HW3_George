@@ -262,7 +262,7 @@ public class MotionCompensation {
     	}
     }
 
-    // TOFIX - add code to normalize residual frame
+    // Normalize residual frame
     protected void normalizeResidual(int resFrame[][], int minError, int maxError) throws IOException {
     	
     	// REMOVETHIS
