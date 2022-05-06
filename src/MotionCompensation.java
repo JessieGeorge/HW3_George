@@ -114,6 +114,8 @@ public class MotionCompensation {
         int[] currPos = new int[2];
         int[] bestPos = new int[2];
         
+        int[][] testTargetFrame = new int[frameHeight][frameWidth]; // REMOVETHIS
+        
         // REMOVETHIS
         FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
 		for (int y = 0; y < frameHeight; y++) {
@@ -133,7 +135,7 @@ public class MotionCompensation {
         		countBlocks++;
         		getBlock(targetFrame, tarBlock, x, y);
         		
-        		// RMEOVETHIS
+        		// REMOVETHIS
         		myBWriter.write("BLOCK #" + countBlocks + "\n");
         		for (int j = 0; j < blockHeight; j++) {
         			for (int i = 0; i < blockWidth; i++) {
@@ -144,9 +146,37 @@ public class MotionCompensation {
         		}
         		myBWriter.write("\n");
         		
-        		
+        		// REMOVETHIS
+        		setBlock(testTargetFrame, tarBlock, x, y);
         	}
         }
+        
+        // REMOVETHIS
+        FileWriter myTWriter = new FileWriter("Test-restore-tar-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", testTargetFrame[y][x]);
+				 myTWriter.write(padded + " ");
+			}
+			myTWriter.write("\n");
+		}
+		myTWriter.write("\n");
+		myTWriter.close();
+		System.out.println("targetFrame dimensions = " + targetFrame.length + " x " + targetFrame[0].length);
+		System.out.println("testTargetFrame dimensions = " + testTargetFrame.length + " x " + testTargetFrame[0].length);
+        System.out.println("Restored with setBlock? " + Arrays.deepEquals(targetFrame, testTargetFrame));
+        int diffNum = 0;
+        for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				if (targetFrame[y][x] != testTargetFrame[y][x]) {
+					System.out.println("y = " + y + " and x = " + x);
+					System.out.println("targetFrame = " + targetFrame[y][x]);
+					System.out.println("testTargetFrame = " + testTargetFrame[y][x]);
+					diffNum++;
+				}
+			}
+		}
+        System.out.println("All done! Found diffNum = " + diffNum);
         
         myBWriter.close();
         System.exit(1); // REMOVETHIS
