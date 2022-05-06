@@ -73,6 +73,11 @@ public class BlockMotionSearch {
 
     // TOFIX - add code to get one reference block from frame
     protected void getRefBlock(final int refFrame[][], int refBlock[][], int refPosX, int refPosY, int subLevel) {
+    	for (int j = refPosY; j < refPosY + blockHeight; j++) {
+    		for (int i = refPosX; i < refPosX + blockWidth; i++) {
+    			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
+    		}
+    	}
     }
 
     // TOFIX - add code to compute MSD between two blocks
