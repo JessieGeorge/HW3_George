@@ -22,10 +22,6 @@ public class MotionCompensation {
     private int searchFast;
     private int searchSubPel;
 
-    public MotionCompensation() {
-        searcher = new BlockMotionSearch();
-    }
-
     // main interface function
     public int process(final String refName, final String tarName, final String mvName, final String resName, int n,
             int p, int optFast, int optSub) throws IOException {
@@ -37,6 +33,8 @@ public class MotionCompensation {
         width = refImage.getW();
         height = refImage.getH();
         init(width, height, n, p, optFast, optSub);
+        searcher = new BlockMotionSearch(frameWidth, frameHeight, n, p);
+        
         // allocate work space
         int[][] refFrame = new int[frameHeight][frameWidth];
         int[][] tarFrame = new int[frameHeight][frameWidth];
@@ -165,24 +163,11 @@ public class MotionCompensation {
 		System.out.println("targetFrame dimensions = " + targetFrame.length + " x " + targetFrame[0].length);
 		System.out.println("testTargetFrame dimensions = " + testTargetFrame.length + " x " + testTargetFrame[0].length);
         System.out.println("Restored with setBlock? " + Arrays.deepEquals(targetFrame, testTargetFrame));
-        int diffNum = 0;
-        for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				if (targetFrame[y][x] != testTargetFrame[y][x]) {
-					System.out.println("y = " + y + " and x = " + x);
-					System.out.println("targetFrame = " + targetFrame[y][x]);
-					System.out.println("testTargetFrame = " + testTargetFrame[y][x]);
-					diffNum++;
-				}
-			}
-		}
-        System.out.println("All done! Found diffNum = " + diffNum);
-        
         myBWriter.close();
         System.exit(1); // REMOVETHIS
     }
 
-    // TOFIX - add code to convert image to gray-scale frame
+    // Convert image to gray-scale frame
     protected void image2Frame(final MImage image, int frame[][]) {
     	
     	int rgb[] = new int[3];
@@ -196,7 +181,7 @@ public class MotionCompensation {
     	}
     }
 
-    // TOFIX - add code to convert gray-scale frame to image
+    // Convert gray-scale frame to image
     protected void frame2Image(final int frame[][], MImage image) {
     	
     	int rgb[] = new int[3];
@@ -214,7 +199,7 @@ public class MotionCompensation {
     protected void normalizeResidual(int resFrame[][]) {
     }
 
-    // TOFIX - add code to get one block from frame
+    // Get one block from frame
     protected void getBlock(final int frame[][], int block[][], int x, int y) {
     	
     	for (int j = y; j < y + blockHeight; j++) {
@@ -224,7 +209,7 @@ public class MotionCompensation {
     	}
     }
 
-    // TOFIX - add code to set one block in frame
+    // Set one block in frame
     protected void setBlock(int frame[][], final int block[][], int x, int y) {
     	
     	for (int j = y; j < y + blockHeight; j++) {

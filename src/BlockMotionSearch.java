@@ -14,10 +14,10 @@ public class BlockMotionSearch {
     private int blockWidth, blockHeight; // block resolution
     private int searchLimH, searchLimV; // search limit
 
-    public BlockMotionSearch() {
-        setFrameSize(640, 480);
-        setBlockSize(8, 8);
-        setSearchLimit(8, 8);
+    public BlockMotionSearch(int frameWidth, int frameHeight, int n, int p) {
+        setFrameSize(frameWidth, frameHeight);
+        setBlockSize(n, n);
+        setSearchLimit(p, p);
     }
 
     // set frame size (w/h)
