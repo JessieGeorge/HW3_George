@@ -47,9 +47,20 @@ public class BlockMotionSearch {
     			int refPosY = startPos[0] - (searchLimH - y);
     			int refPosX = startPos[1] - (searchLimW - x);
     			
-    			// TODO: check is valid here for boundary of block?
+    			// TODO: what is sublevel for full search?
+    			int subLevel = 0;
     			
-    			getRefBlock(refFrame, refBlock, refPosX, refPosY, 0); // TODO: what is sublevel for full search?
+    			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
+    			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
+    			boolean bottomLeft = isValidBlockPos(refPosX, refPosY + blockHeight - 1, subLevel);
+    			boolean bottomRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY + blockHeight - 1, subLevel);
+    					
+    			boolean isValidBlockBoundary = topLeft && topRight 
+    											&& bottomLeft && bottomRight;
+    			
+    			if(isValidBlockBoundary) {
+    				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
+    			}
     			
     		}
     	}
