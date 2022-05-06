@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.Scanner;
 
 public class CS4551_George {
-	// TODO: Remove throws IOException from functions
 	
 	/*
 	 * I'm using Windows. 

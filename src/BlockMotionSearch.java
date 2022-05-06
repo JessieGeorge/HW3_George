@@ -44,6 +44,7 @@ public class BlockMotionSearch {
     public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
+    	// REMOVETHIS
     	FileWriter myFWriter = new FileWriter("Test-full-search-ref-blocks.txt"); 
     	int countSearchBlock = 0;
     	
@@ -66,10 +67,13 @@ public class BlockMotionSearch {
     			boolean isValidBlockBoundary = topLeft && topRight 
     											&& bottomLeft && bottomRight;
     			
+    			// REMOVETHIS
     			countSearchBlock++;
     			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+    			
     			if(isValidBlockBoundary) {
-    				myFWriter.write("valid\n");
+    				myFWriter.write("valid\n"); // REMOVETHIS
+    				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
     				
     				// REMOVETHIS
@@ -102,8 +106,7 @@ public class BlockMotionSearch {
     		}
     	}
     	
-    	myFWriter.close();
-        //System.exit(1); // REMOVETHIS
+    	myFWriter.close(); // REMOVETHIS
         return 0;
     }
 
@@ -111,12 +114,12 @@ public class BlockMotionSearch {
     public int fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
+    	// REMOVETHIS
     	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt"); 
     	int countSearchBlock = 0;
     	
     	double minMSD = Double.MAX_VALUE;
     	
-    	// Using formula from lec12 pdf, page 11, first slide.
     	for (int y = 0; y < 3; y++) {
     		for (int x = 0; x < 3; x++) {
     			
@@ -143,10 +146,13 @@ public class BlockMotionSearch {
     			boolean isValidBlockBoundary = topLeft && topRight 
     											&& bottomLeft && bottomRight;
     			
+    			// REMOVETHIS
     			countSearchBlock++;
     			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+    			
     			if(isValidBlockBoundary) {
-    				myFWriter.write("valid\n");
+    				myFWriter.write("valid\n"); // REMOVETHIS
+    				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
     				
     				// REMOVETHIS
@@ -179,9 +185,7 @@ public class BlockMotionSearch {
     		}
     	}
     	
-    	myFWriter.close();
-        //System.exit(1); // REMOVETHIS
-        
+    	myFWriter.close(); // REMOVETHIS
     	return 0;
     }
 
