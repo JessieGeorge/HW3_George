@@ -190,19 +190,24 @@ public class BlockMotionSearch {
     }
 
     // TOFIX - add code to conduct half-pixel motion search for one target block
-    public int halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) {
+    public int halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
 int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	// REMOVETHIS
-    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt"); 
+    	FileWriter myHWriter = new FileWriter("Test-half-search-ref-blocks.txt"); 
     	int countSearchBlock = 0;
     	
     	double minMSD = Double.MAX_VALUE;
     	
+    	/* assuming searchLimH == searchLimW as per Canvas
+    	 * so we just need one dist var
+    	 */
+    	int dist = searchLimH / 2;
+    	
     	for (int y = 0; y < 3; y++) {
     		for (int x = 0; x < 3; x++) {
     			
-    			if (y == 1 && x == 1 && !useCenter) {
+    			if (y == 1 && x == 1) {
     				/*
     				 *  don't consider the center, 
     				 *  because we already considered it when we
@@ -227,10 +232,10 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     			
     			// REMOVETHIS
     			countSearchBlock++;
-    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+    			myHWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			
     			if(isValidBlockBoundary) {
-    				myFWriter.write("valid\n"); // REMOVETHIS
+    				myHWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
     				
@@ -238,11 +243,11 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             		for (int j = 0; j < blockHeight; j++) {
             			for (int i = 0; i < blockWidth; i++) {
             				String padded = String.format("%03d", refBlock[j][i]);
-            				myFWriter.write(padded + " ");
+            				myHWriter.write(padded + " ");
             			}
-            			myFWriter.write("\n");
+            			myHWriter.write("\n");
             		}
-            		myFWriter.write("\n");
+            		myHWriter.write("\n");
             		
             		int SSD = getSSD(tarBlock, refBlock);
             		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
@@ -258,13 +263,13 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             		}
     			} else {
     				// REMOVETHIS
-    				myFWriter.write("INvalid\n");
+    				myHWriter.write("INvalid\n");
     			}
     			
     		}
     	}
     	
-    	myFWriter.close(); // REMOVETHIS
+    	myHWriter.close(); // REMOVETHIS
     	return 0;
     }
 

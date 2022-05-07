@@ -368,6 +368,14 @@ public class MotionCompensation {
         		myBWriter.write("\n");
         		*/
         		
+        		/* use the best matched block at full-pel position 
+        		 * as the starting point for half-pel processing
+        		 */
+        		currPos[0] = bestPos[0];
+        		currPos[1] = bestPos[1];
+        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
+        		searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+        		
         		// motion vector
         		int dy = y - bestPos[0];
         		int dx = x - bestPos[1];
@@ -391,18 +399,6 @@ public class MotionCompensation {
         		setBlock(residualFrame, resBlock, x, y);
         	}
         }
-        
-        // REMOVETHIS Test pre-normalization
-        FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", residualFrame[y][x]);
-				 myResWriter.write(padded + " ");
-			}
-			myResWriter.write("\n");
-		}
-		myResWriter.write("\n");
-		myResWriter.close();
 		
 		normalizeResidual(residualFrame, minError, maxError);
     }
