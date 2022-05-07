@@ -56,7 +56,6 @@ public class BlockMotionSearch {
     			int refPosY = startPos[0] - (searchLimH - y);
     			int refPosX = startPos[1] - (searchLimW - x);
     			
-    			// TODO: what is subLevel for full search?
     			int subLevel = 0;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
@@ -135,7 +134,6 @@ public class BlockMotionSearch {
     			int refPosY = startPos[0] - (dist - (y * dist));
     			int refPosX = startPos[1] - (dist - (x * dist));
     			
-    			// TODO: what is subLevel for fast search?
     			int subLevel = 0;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
@@ -221,8 +219,7 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     			int refPosY = startPos[0] - (dist - (y * dist));
     			int refPosX = startPos[1] - (dist - (x * dist));
     			
-    			// TODO: what is subLevel for half-pel search?
-    			int subLevel = 0;
+    			int subLevel = 1;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
     			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
