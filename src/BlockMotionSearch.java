@@ -41,7 +41,7 @@ public class BlockMotionSearch {
     }
 
     // full motion search for one target block
-    public int fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
+    public double fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	// REMOVETHIS
@@ -107,11 +107,11 @@ public class BlockMotionSearch {
     	}
     	
     	myFWriter.close(); // REMOVETHIS
-        return 0;
+        return minMSD;
     }
 
     // logarithmic motion search for one target block
-    public int fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
+    public double fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	// REMOVETHIS
@@ -186,11 +186,11 @@ public class BlockMotionSearch {
     	}
     	
     	myFWriter.close(); // REMOVETHIS
-    	return 0;
+    	return minMSD;
     }
 
-    // TOFIX - add code to conduct half-pixel motion search for one target block
-    public int halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
+    // half-pixel motion search for one target block
+    public double halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
 int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	// REMOVETHIS
@@ -216,10 +216,12 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     				continue;
     			}
     			
+    			// TODO: interpolation instead of half distance?
+    			
     			int refPosY = startPos[0] - (dist - (y * dist));
     			int refPosX = startPos[1] - (dist - (x * dist));
     			
-    			// TODO: what is subLevel for fast search?
+    			// TODO: what is subLevel for half-pel search?
     			int subLevel = 0;
     			
     			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
@@ -270,7 +272,7 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	}
     	
     	myHWriter.close(); // REMOVETHIS
-    	return 0;
+    	return minMSD;
     }
 
     // check validity of block position

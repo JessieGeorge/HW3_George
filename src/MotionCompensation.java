@@ -353,7 +353,7 @@ public class MotionCompensation {
         		currPos[0] = y;
         		currPos[1] = x;
         		
-        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		double fullMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
         		
         		/*
         		// REMOVETHIS
@@ -374,7 +374,13 @@ public class MotionCompensation {
         		currPos[0] = bestPos[0];
         		currPos[1] = bestPos[1];
         		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
-        		searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+        		double halfMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+        		
+        		if (fullMinMSD < halfMinMSD) {
+        			// stick with the full-pel match
+        			bestPos[0] = currPos[0];
+        			bestPos[1] = currPos[1];
+        		} // else go ahead with the half-pel match
         		
         		// motion vector
         		int dy = y - bestPos[0];
