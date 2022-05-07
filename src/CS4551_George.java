@@ -42,6 +42,9 @@ public class CS4551_George {
                 conductFastMotionCompensation(videoFrameName, in);
                 break;
             case 3:
+                conductHalfPelBlockMotionCompensation(videoFrameName, in);
+                break;
+            case 4:
                 done = true;
                 break;
             default:
@@ -62,8 +65,9 @@ public class CS4551_George {
         String message = "\nMain Menu-----------------------------------\n"
         		+ "1. Block-based Motion Compensation\n"
         		+ "2. Fast Motion Compensation\n"
-        		+ "3. Quit\n"
-        		+ "Please enter the task number [1-3]:";
+        		+ "3. Half-Pel Block-based Motion Compensation\n"
+        		+ "4. Quit\n"
+        		+ "Please enter the task number [1-4]:";
         
         System.out.println(message);
         
@@ -148,6 +152,25 @@ public class CS4551_George {
          */
         int numFastMatches = (int)(Math.log(p) / Math.log(2)) + 1;
         System.out.println("\nFast search with p = " + p + " so Number of matches performed = " + numFastMatches);
+        return 0;
+    }
+    
+    public static int conductHalfPelBlockMotionCompensation(String vidName, Scanner in) throws IOException {
+        // get parameter input from user
+        int n = getN();
+        int p = getP();
+        int fast = 0;
+        int sub = 1;
+        int start = 50;
+        int count = 10;
+        MotionCompensation coder = new MotionCompensation();
+        for (int curNo = start; curNo < start + count; curNo++) {
+            String refName = String.format(vidName, curNo - 1);
+            String tarName = String.format(vidName, curNo);
+            String mvName = String.format("mv_%03d.txt", curNo);
+            String resName = String.format("res_%03d.ppm", curNo);
+            coder.process(refName, tarName, mvName, resName, n, p, fast, sub);
+        }
         return 0;
     }
 }

@@ -20,7 +20,7 @@ public class MotionCompensation {
     private int numBlockInX, numBlockInY; // number of blocks in X/Y direction
     private int searchLimit; // search limit
     private int searchFast; // binary boolean
-    private int searchSubPel;
+    private int searchSubPel; // binary boolean
 
     // main interface function
     public int process(final String refName, final String tarName, final String mvName, final String resName, int n,
@@ -102,11 +102,13 @@ public class MotionCompensation {
     	if (searchFast == 1) {
     		fastSearchCompensate(referenceFrame, targetFrame, 
     				motionVectors, residualFrame);
+    	} else if (searchSubPel == 1) {
+    		halfPelSearchCompensate(referenceFrame, targetFrame, 
+    				motionVectors, residualFrame);
     	} else {
     		fullSearchCompensate(referenceFrame, targetFrame, 
     				motionVectors, residualFrame);
     	}
-        
     }
     
     protected void fullSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
@@ -306,6 +308,101 @@ public class MotionCompensation {
         		setBlock(residualFrame, resBlock, x, y);
         	}
 		}
+		
+		normalizeResidual(residualFrame, minError, maxError);
+    }
+    
+    protected void halfPelSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
+            int residualFrame[][]) throws IOException {
+    	int[][] refBlock = new int[blockHeight][blockWidth];
+        int[][] tarBlock = new int[blockHeight][blockWidth];
+        int[][] resBlock = new int[blockHeight][blockWidth];
+        int[] currPos = new int[2];
+        int[] bestPos = new int[2];
+        int minError = Integer.MAX_VALUE;
+        int maxError = 0;
+        
+        // REMOVETHIS
+        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", targetFrame[y][x]);
+				 myWriter.write(padded + " ");
+			}
+			myWriter.write("\n");
+		}
+		myWriter.write("\n");
+		myWriter.close();
+		
+		// REMOVETHIS
+        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", referenceFrame[y][x]);
+				 myRWriter.write(padded + " ");
+			}
+			myRWriter.write("\n");
+		}
+		myRWriter.write("\n");
+		myRWriter.close();
+		
+        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
+        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
+        		
+        		getBlock(targetFrame, tarBlock, x, y);
+        		currPos[0] = y;
+        		currPos[1] = x;
+        		
+        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+        		
+        		/*
+        		// REMOVETHIS
+        		myBWriter.write("BLOCK #" + countBlocks + "\n");
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				String padded = String.format("%03d", tarBlock[j][i]);
+        				myBWriter.write(padded + " ");
+        			}
+        			myBWriter.write("\n");
+        		}
+        		myBWriter.write("\n");
+        		*/
+        		
+        		// motion vector
+        		int dy = y - bestPos[0];
+        		int dx = x - bestPos[1];
+        		motionVectors[numBlockY][numBlockX][0] = dy;
+        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		
+        		// residual
+        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
+        				resBlock[j][i] = err;
+        				if (err < minError) {
+        					minError = err;
+        				} else if (err > maxError) {
+        					maxError = err;
+        				}
+        			}
+        		}
+        		
+        		setBlock(residualFrame, resBlock, x, y);
+        	}
+        }
+        
+        // REMOVETHIS Test pre-normalization
+        FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
+		for (int y = 0; y < frameHeight; y++) {
+			for (int x = 0; x < frameWidth; x++) {
+				String padded = String.format("%03d", residualFrame[y][x]);
+				 myResWriter.write(padded + " ");
+			}
+			myResWriter.write("\n");
+		}
+		myResWriter.write("\n");
+		myResWriter.close();
 		
 		normalizeResidual(residualFrame, minError, maxError);
     }

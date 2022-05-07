@@ -110,7 +110,7 @@ public class BlockMotionSearch {
         return 0;
     }
 
-    // TOFIX - add code to conduct logarithmic motion search for one target block
+    // logarithmic motion search for one target block
     public int fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
@@ -191,7 +191,81 @@ public class BlockMotionSearch {
 
     // TOFIX - add code to conduct half-pixel motion search for one target block
     public int halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) {
-        return 0;
+int[][] refBlock = new int[blockHeight][blockWidth];
+    	
+    	// REMOVETHIS
+    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt"); 
+    	int countSearchBlock = 0;
+    	
+    	double minMSD = Double.MAX_VALUE;
+    	
+    	for (int y = 0; y < 3; y++) {
+    		for (int x = 0; x < 3; x++) {
+    			
+    			if (y == 1 && x == 1 && !useCenter) {
+    				/*
+    				 *  don't consider the center, 
+    				 *  because we already considered it when we
+    				 *  got the best match in the previous round
+    				 */
+    				continue;
+    			}
+    			
+    			int refPosY = startPos[0] - (dist - (y * dist));
+    			int refPosX = startPos[1] - (dist - (x * dist));
+    			
+    			// TODO: what is subLevel for fast search?
+    			int subLevel = 0;
+    			
+    			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
+    			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
+    			boolean bottomLeft = isValidBlockPos(refPosX, refPosY + blockHeight - 1, subLevel);
+    			boolean bottomRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY + blockHeight - 1, subLevel);
+    					
+    			boolean isValidBlockBoundary = topLeft && topRight 
+    											&& bottomLeft && bottomRight;
+    			
+    			// REMOVETHIS
+    			countSearchBlock++;
+    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+    			
+    			if(isValidBlockBoundary) {
+    				myFWriter.write("valid\n"); // REMOVETHIS
+    				
+    				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
+    				
+    				// REMOVETHIS
+            		for (int j = 0; j < blockHeight; j++) {
+            			for (int i = 0; i < blockWidth; i++) {
+            				String padded = String.format("%03d", refBlock[j][i]);
+            				myFWriter.write(padded + " ");
+            			}
+            			myFWriter.write("\n");
+            		}
+            		myFWriter.write("\n");
+            		
+            		int SSD = getSSD(tarBlock, refBlock);
+            		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
+            		
+            		// best match
+            		if (MSD < minMSD) {
+            			minMSD = MSD;
+            			/* the position of the top left pixel of 
+            			 * the best matching block in the reference image
+            			 */
+            			bestPos[0] = refPosY;
+                		bestPos[1] = refPosX;
+            		}
+    			} else {
+    				// REMOVETHIS
+    				myFWriter.write("INvalid\n");
+    			}
+    			
+    		}
+    	}
+    	
+    	myFWriter.close(); // REMOVETHIS
+    	return 0;
     }
 
     // check validity of block position
