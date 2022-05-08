@@ -198,7 +198,10 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	double minMSD = Double.MAX_VALUE;
     	
     	/* assuming searchLimH == searchLimW as per Canvas
-    	 * so we just need one dist var
+    	 * so we just need one dist var.
+    	 * 
+    	 * using int type since the given valid numbers for p in Canvas
+    	 * are all divisible by 2.
     	 */
     	int dist = searchLimH / 2;
     	
