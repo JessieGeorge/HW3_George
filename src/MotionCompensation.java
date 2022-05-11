@@ -107,6 +107,10 @@ public class MotionCompensation {
         int minError = Integer.MAX_VALUE;
         int maxError = 0;
         
+        boolean havePrevBest = false; // Fast Search: have the best position of the previous round of neighbor comparisons
+        
+        double fullMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
+        
         for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
         	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
         		
@@ -115,15 +119,61 @@ public class MotionCompensation {
         		currPos[1] = x;
         		
 		    	if (searchFast == 1) {
-		    		fastSearchCompensate(referenceFrame, targetFrame, 
-		    				motionVectors, residualFrame);
+		    		boolean useCenter = true; // only the first time. It's reinitialized inside the while loop.
+	        		int dist = searchLimit * 2; // because we're dividing after this
+	        		int v, u;
+	        		while(true) {
+	        			
+	        			dist = dist / 2;
+	            		if (dist == 0) {
+	            			break;
+	            		}
+	            		
+	        			if (havePrevBest) {
+	        				v = bestPos[0];
+	        				u = bestPos[1];
+	        			} else {
+	        				v = y;
+	        	    		u = x;
+	        			}
+	        			
+	            		getBlock(targetFrame, tarBlock, u, v);
+	            		currPos[0] = v;
+	            		currPos[1] = u;
+	            		
+	            		fullMinMSD = searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
+	            		useCenter = false;
+	            		havePrevBest = true;
+	            		
+	            		/*
+	            		// REMOVETHIS
+	            		mvBWriter.write("BLOCK #" + countBlocks + "\n");
+	            		for (int j = 0; j < blockHeight; j++) {
+	            			for (int i = 0; i < blockWidth; i++) {
+	            				String padded = String.format("%03d", tarBlock[j][i]);
+	            				mvBWriter.write(padded + " ");
+	            			}
+	            			mvBWriter.write("\n");
+	            		}
+	            		mvBWriter.write("\n");
+	            		*/
+	            		
+	                }
 		    	} else {
-		    		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+		    		fullMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
 		    	}
 		    	
 		    	if (searchSubPel == 1) {
-		    		halfPelSearchCompensate(referenceFrame, targetFrame, 
-		    				motionVectors, residualFrame);
+		    		currPos[0] = bestPos[0];
+	        		currPos[1] = bestPos[1];
+	        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
+	        		double halfMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+	        		
+	        		if (fullMinMSD < halfMinMSD) {
+	        			// stick with the full-pel match
+	        			bestPos[0] = currPos[0];
+	        			bestPos[1] = currPos[1];
+	        		} // else go ahead with the half-pel match i.e bestPos was updated in halfSearch function
 		    	}
 		    	
 		    	// motion vector
@@ -153,304 +203,6 @@ public class MotionCompensation {
         normalizeResidual(residualFrame, minError, maxError);
     }
     
-    protected void fullSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
-            int residualFrame[][]) throws IOException {
-    	int[][] refBlock = new int[blockHeight][blockWidth];
-        int[][] tarBlock = new int[blockHeight][blockWidth];
-        int[][] resBlock = new int[blockHeight][blockWidth];
-        int[] currPos = new int[2];
-        int[] bestPos = new int[2];
-        int minError = Integer.MAX_VALUE;
-        int maxError = 0;
-        
-        // REMOVETHIS
-        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", targetFrame[y][x]);
-				 myWriter.write(padded + " ");
-			}
-			myWriter.write("\n");
-		}
-		myWriter.write("\n");
-		myWriter.close();
-		
-		// REMOVETHIS
-        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", referenceFrame[y][x]);
-				 myRWriter.write(padded + " ");
-			}
-			myRWriter.write("\n");
-		}
-		myRWriter.write("\n");
-		myRWriter.close();
-		
-        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
-        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
-        		
-        		getBlock(targetFrame, tarBlock, x, y);
-        		currPos[0] = y;
-        		currPos[1] = x;
-        		
-        		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
-        		
-        		/*
-        		// REMOVETHIS
-        		myBWriter.write("BLOCK #" + countBlocks + "\n");
-        		for (int j = 0; j < blockHeight; j++) {
-        			for (int i = 0; i < blockWidth; i++) {
-        				String padded = String.format("%03d", tarBlock[j][i]);
-        				myBWriter.write(padded + " ");
-        			}
-        			myBWriter.write("\n");
-        		}
-        		myBWriter.write("\n");
-        		*/
-        		
-        		// motion vector
-        		int dy = y - bestPos[0];
-        		int dx = x - bestPos[1];
-        		motionVectors[numBlockY][numBlockX][0] = dy;
-        		motionVectors[numBlockY][numBlockX][1] = dx;
-        		
-        		// residual
-        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
-        		for (int j = 0; j < blockHeight; j++) {
-        			for (int i = 0; i < blockWidth; i++) {
-        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
-        				resBlock[j][i] = err;
-        				if (err < minError) {
-        					minError = err;
-        				} else if (err > maxError) {
-        					maxError = err;
-        				}
-        			}
-        		}
-        		
-        		setBlock(residualFrame, resBlock, x, y);
-        	}
-        }
-        
-        // REMOVETHIS Test pre-normalization
-        FileWriter myResWriter = new FileWriter("Test-residual-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", residualFrame[y][x]);
-				 myResWriter.write(padded + " ");
-			}
-			myResWriter.write("\n");
-		}
-		myResWriter.write("\n");
-		myResWriter.close();
-		
-		normalizeResidual(residualFrame, minError, maxError);
-    }
-    
-    protected void fastSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
-            int residualFrame[][]) throws IOException {
-    	int[][] refBlock = new int[blockHeight][blockWidth];
-        int[][] tarBlock = new int[blockHeight][blockWidth];
-        int[][] resBlock = new int[blockHeight][blockWidth];
-        int[] currPos = new int[2];
-        int[] bestPos = new int[2];
-        boolean havePrevBest = false; // have the best position of the previous round of neighbor comparisons
-        int minError = Integer.MAX_VALUE;
-        int maxError = 0;
-        
-        // REMOVETHIS
-        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", targetFrame[y][x]);
-				 myWriter.write(padded + " ");
-			}
-			myWriter.write("\n");
-		}
-		myWriter.write("\n");
-		myWriter.close();
-		
-		// REMOVETHIS
-        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", referenceFrame[y][x]);
-				 myRWriter.write(padded + " ");
-			}
-			myRWriter.write("\n");
-		}
-		myRWriter.write("\n");
-		myRWriter.close();
-		
-		for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
-        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
-        		
-        		boolean useCenter = true; // only the first time
-        		int dist = searchLimit * 2; // because we're dividing after this
-        		int v, u;
-        		while(true) {
-        			
-        			dist = dist / 2;
-            		if (dist == 0) {
-            			break;
-            		}
-            		
-        			if (havePrevBest) {
-        				v = bestPos[0];
-        				u = bestPos[1];
-        			} else {
-        				v = y;
-        	    		u = x;
-        			}
-        			
-            		getBlock(targetFrame, tarBlock, u, v);
-            		currPos[0] = v;
-            		currPos[1] = u;
-            		
-            		searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
-            		useCenter = false;
-            		havePrevBest = true;
-            		
-            		/*
-            		// REMOVETHIS
-            		mvBWriter.write("BLOCK #" + countBlocks + "\n");
-            		for (int j = 0; j < blockHeight; j++) {
-            			for (int i = 0; i < blockWidth; i++) {
-            				String padded = String.format("%03d", tarBlock[j][i]);
-            				mvBWriter.write(padded + " ");
-            			}
-            			mvBWriter.write("\n");
-            		}
-            		mvBWriter.write("\n");
-            		*/
-            		
-                }
-        		
-        		// motion vector
-        		int dy = y - bestPos[0];
-        		int dx = x - bestPos[1];
-        		motionVectors[numBlockY][numBlockX][0] = dy;
-        		motionVectors[numBlockY][numBlockX][1] = dx;
-        		
-        		// residual
-        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
-        		for (int j = 0; j < blockHeight; j++) {
-        			for (int i = 0; i < blockWidth; i++) {
-        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
-        				resBlock[j][i] = err;
-        				if (err < minError) {
-        					minError = err;
-        				} else if (err > maxError) {
-        					maxError = err;
-        				}
-        			}
-        		}
-        		
-        		setBlock(residualFrame, resBlock, x, y);
-        	}
-		}
-		
-		normalizeResidual(residualFrame, minError, maxError);
-    }
-    
-    protected void halfPelSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
-            int residualFrame[][]) throws IOException {
-    	int[][] refBlock = new int[blockHeight][blockWidth];
-        int[][] tarBlock = new int[blockHeight][blockWidth];
-        int[][] resBlock = new int[blockHeight][blockWidth];
-        int[] currPos = new int[2];
-        int[] bestPos = new int[2];
-        int minError = Integer.MAX_VALUE;
-        int maxError = 0;
-        
-        // REMOVETHIS
-        FileWriter myWriter = new FileWriter("Test-tar-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", targetFrame[y][x]);
-				 myWriter.write(padded + " ");
-			}
-			myWriter.write("\n");
-		}
-		myWriter.write("\n");
-		myWriter.close();
-		
-		// REMOVETHIS
-        FileWriter myRWriter = new FileWriter("Test-ref-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", referenceFrame[y][x]);
-				 myRWriter.write(padded + " ");
-			}
-			myRWriter.write("\n");
-		}
-		myRWriter.write("\n");
-		myRWriter.close();
-		
-        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
-        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
-        		
-        		getBlock(targetFrame, tarBlock, x, y);
-        		currPos[0] = y;
-        		currPos[1] = x;
-        		
-        		double fullMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
-        		
-        		/*
-        		// REMOVETHIS
-        		myBWriter.write("BLOCK #" + countBlocks + "\n");
-        		for (int j = 0; j < blockHeight; j++) {
-        			for (int i = 0; i < blockWidth; i++) {
-        				String padded = String.format("%03d", tarBlock[j][i]);
-        				myBWriter.write(padded + " ");
-        			}
-        			myBWriter.write("\n");
-        		}
-        		myBWriter.write("\n");
-        		*/
-        		
-        		/* use the best matched block at full-pel position 
-        		 * as the starting point for half-pel processing
-        		 */
-        		currPos[0] = bestPos[0];
-        		currPos[1] = bestPos[1];
-        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
-        		double halfMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
-        		
-        		if (fullMinMSD < halfMinMSD) {
-        			// stick with the full-pel match
-        			bestPos[0] = currPos[0];
-        			bestPos[1] = currPos[1];
-        		} // else go ahead with the half-pel match
-        		
-        		// motion vector
-        		int dy = y - bestPos[0];
-        		int dx = x - bestPos[1];
-        		motionVectors[numBlockY][numBlockX][0] = dy;
-        		motionVectors[numBlockY][numBlockX][1] = dx;
-        		
-        		// residual
-        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
-        		for (int j = 0; j < blockHeight; j++) {
-        			for (int i = 0; i < blockWidth; i++) {
-        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
-        				resBlock[j][i] = err;
-        				if (err < minError) {
-        					minError = err;
-        				} else if (err > maxError) {
-        					maxError = err;
-        				}
-        			}
-        		}
-        		
-        		setBlock(residualFrame, resBlock, x, y);
-        	}
-        }
-		
-		normalizeResidual(residualFrame, minError, maxError);
-    }
-
     // Convert image to gray-scale frame
     protected void image2Frame(final MImage image, int frame[][]) {
     	
