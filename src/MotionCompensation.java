@@ -10,7 +10,7 @@
  *******************************************************/
 
 import java.io.*;
-import java.util.Arrays;
+import java.util.Arrays; // REMOVETHIS?
 
 public class MotionCompensation {
     private BlockMotionSearch searcher;
@@ -179,8 +179,9 @@ public class MotionCompensation {
 		    	// motion vector
         		int dy = y - bestPos[0];
         		int dx = x - bestPos[1];
-        		motionVectors[numBlockY][numBlockX][0] = dy;
-        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		// keeping order of Professor's sample output
+        		motionVectors[numBlockY][numBlockX][0] = dx;
+        		motionVectors[numBlockY][numBlockX][1] = dy;
         		
         		// residual
         		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
@@ -294,11 +295,12 @@ public class MotionCompensation {
     	
     	try {
     		FileWriter myWriter = new FileWriter(mvName);
+    		// keeping format of Professor's sample output
     		for (int numBlockY = 0; numBlockY < numBlockInY; numBlockY++) {
     			for (int numBlockX = 0; numBlockX < numBlockInX; numBlockX++) {
-    				myWriter.write("motion["+numBlockY+"]["+numBlockX+"] = " + Arrays.toString(motion[numBlockY][numBlockX]));
-    				myWriter.write("\n");
+    				myWriter.write("(" + motion[numBlockY][numBlockX][0] + "," + motion[numBlockY][numBlockX][1] + ") ");
     			}
+    			myWriter.write("\n");
     		}
     		
     		myWriter.close();
