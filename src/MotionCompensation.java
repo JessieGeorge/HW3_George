@@ -99,16 +99,58 @@ public class MotionCompensation {
     protected void searchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
             int residualFrame[][]) throws IOException {
     	
-    	if (searchFast == 1) {
-    		fastSearchCompensate(referenceFrame, targetFrame, 
-    				motionVectors, residualFrame);
-    	} else if (searchSubPel == 1) {
-    		halfPelSearchCompensate(referenceFrame, targetFrame, 
-    				motionVectors, residualFrame);
-    	} else {
-    		fullSearchCompensate(referenceFrame, targetFrame, 
-    				motionVectors, residualFrame);
-    	}
+    	int[][] refBlock = new int[blockHeight][blockWidth];
+        int[][] tarBlock = new int[blockHeight][blockWidth];
+        int[][] resBlock = new int[blockHeight][blockWidth];
+        int[] currPos = new int[2];
+        int[] bestPos = new int[2];
+        int minError = Integer.MAX_VALUE;
+        int maxError = 0;
+        
+        for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
+        	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
+        		
+        		getBlock(targetFrame, tarBlock, x, y);
+        		currPos[0] = y;
+        		currPos[1] = x;
+        		
+		    	if (searchFast == 1) {
+		    		fastSearchCompensate(referenceFrame, targetFrame, 
+		    				motionVectors, residualFrame);
+		    	} else {
+		    		searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+		    	}
+		    	
+		    	if (searchSubPel == 1) {
+		    		halfPelSearchCompensate(referenceFrame, targetFrame, 
+		    				motionVectors, residualFrame);
+		    	}
+		    	
+		    	// motion vector
+        		int dy = y - bestPos[0];
+        		int dx = x - bestPos[1];
+        		motionVectors[numBlockY][numBlockX][0] = dy;
+        		motionVectors[numBlockY][numBlockX][1] = dx;
+        		
+        		// residual
+        		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
+        		for (int j = 0; j < blockHeight; j++) {
+        			for (int i = 0; i < blockWidth; i++) {
+        				int err = Math.abs(tarBlock[j][i] - refBlock[j][i]);
+        				resBlock[j][i] = err;
+        				if (err < minError) {
+        					minError = err;
+        				} else if (err > maxError) {
+        					maxError = err;
+        				}
+        			}
+        		}
+        		
+        		setBlock(residualFrame, resBlock, x, y);
+        	}
+        }
+        
+        normalizeResidual(residualFrame, minError, maxError);
     }
     
     protected void fullSearchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
@@ -245,7 +287,7 @@ public class MotionCompensation {
         	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
         		
         		boolean useCenter = true; // only the first time
-        		int dist = searchLimit * 2;
+        		int dist = searchLimit * 2; // because we're dividing after this
         		int v, u;
         		while(true) {
         			

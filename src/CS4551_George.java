@@ -65,7 +65,7 @@ public class CS4551_George {
         String message = "\nMain Menu-----------------------------------\n"
         		+ "1. Block-based Motion Compensation\n"
         		+ "2. Fast Motion Compensation\n"
-        		+ "3. Half-Pel Block-based Motion Compensation\n"
+        		+ "3. Extra Credit: Half-Pel Block-based Motion Compensation\n"
         		+ "4. Quit\n"
         		+ "Please enter the task number [1-4]:";
         
