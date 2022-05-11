@@ -232,9 +232,9 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             			 * the best matching block in the reference image
             			 */
             			
-            			// TODO: back to full pel by division and interpolation if needed?
-            			bestPos[0] = refPosY;
-                		bestPos[1] = refPosX;
+            			// TODO: convert back to full pel by division, and interpolation if needed?
+            			bestPos[0] = (int)Math.round(refPosY / 2.0);
+                		bestPos[1] = (int)Math.round(refPosX / 2.0);
             		}
     			} else {
     				// REMOVETHIS
