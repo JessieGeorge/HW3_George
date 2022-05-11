@@ -109,7 +109,7 @@ public class MotionCompensation {
         
         boolean havePrevBest = false; // Fast Search: have the best position of the previous round of neighbor comparisons
         
-        double fullMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
+        double fullPelMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
         
         for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
         	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
@@ -132,16 +132,13 @@ public class MotionCompensation {
 	        			if (havePrevBest) {
 	        				v = bestPos[0];
 	        				u = bestPos[1];
-	        			} else {
-	        				v = y;
-	        	    		u = x;
-	        			}
+	        				
+	        				getBlock(targetFrame, tarBlock, u, v);
+		            		currPos[0] = v;
+		            		currPos[1] = u;
+	        			} // else you already set it above with x and y
 	        			
-	            		getBlock(targetFrame, tarBlock, u, v);
-	            		currPos[0] = v;
-	            		currPos[1] = u;
-	            		
-	            		fullMinMSD = searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
+	            		fullPelMinMSD = searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
 	            		useCenter = false;
 	            		havePrevBest = true;
 	            		
@@ -160,16 +157,16 @@ public class MotionCompensation {
 	            		
 	                }
 		    	} else {
-		    		fullMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
+		    		fullPelMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
 		    	}
 		    	
 		    	if (searchSubPel == 1) {
 		    		currPos[0] = bestPos[0];
 	        		currPos[1] = bestPos[1];
 	        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
-	        		double halfMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+	        		double halfPelMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
 	        		
-	        		if (fullMinMSD < halfMinMSD) {
+	        		if (fullPelMinMSD < halfPelMinMSD) {
 	        			// stick with the full-pel match
 	        			bestPos[0] = currPos[0];
 	        			bestPos[1] = currPos[1];
