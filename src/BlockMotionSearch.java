@@ -1,5 +1,6 @@
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Arrays;
 
 /*******************************************************
  * CS4551 Multimedia Software Systems
@@ -176,18 +177,13 @@ public class BlockMotionSearch {
 int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	// REMOVETHIS
-    	FileWriter myHWriter = new FileWriter("Test-half-search-ref-blocks.txt"); 
+    	FileWriter myHWriter = new FileWriter("Test-half-search-ref-blocks.txt");
+    	myHWriter.write("startPos = " + Arrays.toString(startPos) + "\n");
     	int countSearchBlock = 0;
     	
     	double minMSD = Double.MAX_VALUE;
     	
-    	/* assuming searchLimH == searchLimW as per Canvas
-    	 * so we just need one dist var.
-    	 * 
-    	 * using int type since the given valid numbers for p in Canvas
-    	 * are all divisible by 2.
-    	 */
-    	int dist = searchLimH / 2;
+    	int dist = 1; // immediate neighbors
     	
     	for (int y = 0; y < 3; y++) {
     		for (int x = 0; x < 3; x++) {
@@ -201,16 +197,15 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     				continue;
     			}
     			
-    			// TODO: interpolation instead of half distance?
-    			
-    			int refPosY = startPos[0] - (dist - (y * dist));
-    			int refPosX = startPos[1] - (dist - (x * dist));
+    			int refPosY = (startPos[0] * 2) - (dist - (y * dist));
+    			int refPosX = (startPos[1] * 2) - (dist - (x * dist));
     			
     			int subLevel = 1;
     			
     			// REMOVETHIS
     			countSearchBlock++;
     			myHWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+    			myHWriter.write("refPosY = " + refPosY + " and refPosX = " + refPosX + "\n");
     			
     			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
     				myHWriter.write("valid\n"); // REMOVETHIS
@@ -236,6 +231,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             			/* the position of the top left pixel of 
             			 * the best matching block in the reference image
             			 */
+            			
+            			// TODO: back to full pel by division and interpolation if needed?
             			bestPos[0] = refPosY;
                 		bestPos[1] = refPosX;
             		}
