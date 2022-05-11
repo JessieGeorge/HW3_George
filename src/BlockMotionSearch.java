@@ -58,19 +58,11 @@ public class BlockMotionSearch {
     			
     			int subLevel = 0;
     			
-    			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
-    			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
-    			boolean bottomLeft = isValidBlockPos(refPosX, refPosY + blockHeight - 1, subLevel);
-    			boolean bottomRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY + blockHeight - 1, subLevel);
-    					
-    			boolean isValidBlockBoundary = topLeft && topRight 
-    											&& bottomLeft && bottomRight;
-    			
     			// REMOVETHIS
     			countSearchBlock++;
     			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			
-    			if(isValidBlockBoundary) {
+    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
     				myFWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
@@ -136,19 +128,11 @@ public class BlockMotionSearch {
     			
     			int subLevel = 0;
     			
-    			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
-    			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
-    			boolean bottomLeft = isValidBlockPos(refPosX, refPosY + blockHeight - 1, subLevel);
-    			boolean bottomRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY + blockHeight - 1, subLevel);
-    					
-    			boolean isValidBlockBoundary = topLeft && topRight 
-    											&& bottomLeft && bottomRight;
-    			
     			// REMOVETHIS
     			countSearchBlock++;
     			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			
-    			if(isValidBlockBoundary) {
+    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
     				myFWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
@@ -224,19 +208,11 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     			
     			int subLevel = 1;
     			
-    			boolean topLeft = isValidBlockPos(refPosX, refPosY, subLevel);
-    			boolean topRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY, subLevel);
-    			boolean bottomLeft = isValidBlockPos(refPosX, refPosY + blockHeight - 1, subLevel);
-    			boolean bottomRight = isValidBlockPos(refPosX + blockWidth - 1, refPosY + blockHeight - 1, subLevel);
-    					
-    			boolean isValidBlockBoundary = topLeft && topRight 
-    											&& bottomLeft && bottomRight;
-    			
     			// REMOVETHIS
     			countSearchBlock++;
     			myHWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			
-    			if(isValidBlockBoundary) {
+    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
     				myHWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
@@ -278,8 +254,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     // check validity of block position
     public boolean isValidBlockPos(final int blkPosX, final int blkPosY, final int subLevel) {
     	// fits within the dimension of the reference frame
-        return (blkPosX >= 0 && blkPosX < frameWidth) 
-        		&& (blkPosY >= 0 && blkPosY < frameHeight);
+        return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
+        		&& (blkPosY >= 0 && blkPosY <= (frameHeight - blockHeight));
     }
 
     // get one reference block from frame
