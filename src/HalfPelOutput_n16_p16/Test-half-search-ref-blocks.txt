@@ -1,0 +1,25 @@
+startPos = [128, 176]
+SEARCH BLOCK #1
+refPosY = 255 and refPosX = 351
+INvalid
+SEARCH BLOCK #2
+refPosY = 255 and refPosX = 352
+INvalid
+SEARCH BLOCK #3
+refPosY = 255 and refPosX = 353
+INvalid
+SEARCH BLOCK #4
+refPosY = 256 and refPosX = 351
+INvalid
+SEARCH BLOCK #5
+refPosY = 256 and refPosX = 353
+INvalid
+SEARCH BLOCK #6
+refPosY = 257 and refPosX = 351
+INvalid
+SEARCH BLOCK #7
+refPosY = 257 and refPosX = 352
+INvalid
+SEARCH BLOCK #8
+refPosY = 257 and refPosX = 353
+INvalid
