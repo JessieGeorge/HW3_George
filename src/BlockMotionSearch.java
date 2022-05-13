@@ -199,6 +199,10 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	double minMSD = Double.MAX_VALUE;
     	
+    	// convert Full-pel to Half-pel
+    	startPos[0] *= 2;
+    	startPos[1] *= 2;
+    	
     	int dist = 1; // immediate neighbors
     	
     	for (int y = 0; y < 3; y++) {
@@ -213,8 +217,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     				continue;
     			}
     			
-    			int refPosY = (startPos[0] * 2) - (dist - (y * dist));
-    			int refPosX = (startPos[1] * 2) - (dist - (x * dist));
+    			int refPosY = startPos[0] - (dist - (y * dist));
+    			int refPosX = startPos[1] - (dist - (x * dist));
     			
     			int subLevel = 1;
     			
@@ -267,16 +271,39 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     // check validity of block position
     public boolean isValidBlockPos(final int blkPosX, final int blkPosY, final int subLevel) {
     	// fits within the dimension of the reference frame
-        return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
-        		&& (blkPosY >= 0 && blkPosY <= (frameHeight - blockHeight));
+    	
+    	if (subLevel == 1) {
+    		// half-pel
+    		// TODO: something for half-pel?
+            return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
+            		&& (blkPosY >= 0 && blkPosY <= (frameHeight - blockHeight));
+    	} else {
+    		// full-pel
+    		return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
+            		&& (blkPosY >= 0 && blkPosY <= (frameHeight - blockHeight));
+    	}
+    	
     }
 
     // get one reference block from frame
     protected void getRefBlock(final int refFrame[][], int refBlock[][], int refPosX, int refPosY, int subLevel) {
-    	for (int j = refPosY; j < refPosY + blockHeight; j++) {
-    		for (int i = refPosX; i < refPosX + blockWidth; i++) {
-    			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
-    		}
+    	
+    	if (subLevel == 1) {
+    		// half-pel
+    		// TODO: something for half-pel?
+    		for (int j = refPosY; j < refPosY + blockHeight; j++) {
+        		for (int i = refPosX; i < refPosX + blockWidth; i++) {
+        			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
+        		}
+        	}
+    		
+    	} else {
+    		// full-pel
+    		for (int j = refPosY; j < refPosY + blockHeight; j++) {
+        		for (int i = refPosX; i < refPosX + blockWidth; i++) {
+        			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
+        		}
+        	}
     	}
     }
 
