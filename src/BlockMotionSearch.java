@@ -1,6 +1,4 @@
-import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Arrays;
 
 /*******************************************************
  * CS4551 Multimedia Software Systems
@@ -45,10 +43,6 @@ public class BlockMotionSearch {
     public double fullSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
     	int[][] refBlock = new int[blockHeight][blockWidth];
     	
-    	// REMOVETHIS
-    	FileWriter myFWriter = new FileWriter("Test-full-search-ref-blocks.txt"); 
-    	int countSearchBlock = 0;
-    	
     	double minMSD = Double.MAX_VALUE;
     	
     	// Using formula from lec12 pdf, page 11, first slide.
@@ -59,24 +53,9 @@ public class BlockMotionSearch {
     			
     			int subLevel = 0;
     			
-    			// REMOVETHIS
-    			countSearchBlock++;
-    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
-    			
     			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
-    				myFWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
-    				
-    				// REMOVETHIS
-            		for (int j = 0; j < blockHeight; j++) {
-            			for (int i = 0; i < blockWidth; i++) {
-            				String padded = String.format("%03d", refBlock[j][i]);
-            				myFWriter.write(padded + " ");
-            			}
-            			myFWriter.write("\n");
-            		}
-            		myFWriter.write("\n");
             		
             		int SSD = getSSD(tarBlock, refBlock);
             		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
@@ -90,15 +69,11 @@ public class BlockMotionSearch {
             			bestPos[0] = refPosY;
                 		bestPos[1] = refPosX;
             		}
-    			} else {
-    				// REMOVETHIS
-    				myFWriter.write("INvalid\n");
     			}
     			
     		}
     	}
     	
-    	myFWriter.close(); // REMOVETHIS
         return minMSD;
     }
 
@@ -111,11 +86,7 @@ public class BlockMotionSearch {
 		int[][] refBlock = new int[blockHeight][blockWidth];
 		double minMSD = Double.MAX_VALUE;
 		
-		// REMOVETHIS
-    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt");
-    	
 		while(dist > 0) {
-			int countSearchBlock = 0; // REMOVETHIS
 			
 			if (havePrevBest) {
 				// start from the previous best
@@ -140,25 +111,10 @@ public class BlockMotionSearch {
 	    			
 	    			int subLevel = 0;
 	    			
-	    			// REMOVETHIS
-	    			countSearchBlock++;
-	    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
-	    			
 	    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
-	    				myFWriter.write("valid\n"); // REMOVETHIS
 	    				
 	    				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
 	    				
-	    				// REMOVETHIS
-	            		for (int j = 0; j < blockHeight; j++) {
-	            			for (int i = 0; i < blockWidth; i++) {
-	            				String padded = String.format("%03d", refBlock[j][i]);
-	            				myFWriter.write(padded + " ");
-	            			}
-	            			myFWriter.write("\n");
-	            		}
-	            		myFWriter.write("\n");
-	            		
 	            		int SSD = getSSD(tarBlock, refBlock);
 	            		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
 	            		
@@ -171,11 +127,7 @@ public class BlockMotionSearch {
 	            			bestPos[0] = refPosY;
 	                		bestPos[1] = refPosX;
 	            		}
-	    			} else {
-	    				// REMOVETHIS
-	    				myFWriter.write("INvalid\n");
 	    			}
-	    			
 	    		}
 	    	}
 			
@@ -184,18 +136,12 @@ public class BlockMotionSearch {
     		dist = dist / 2;
         }
     	
-    	myFWriter.close(); // REMOVETHIS
-    	return minMSD;
+		return minMSD;
     }
 
     // half-pixel motion search for one target block
     public double halfSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
 int[][] refBlock = new int[blockHeight][blockWidth];
-    	
-    	// REMOVETHIS
-    	FileWriter myHWriter = new FileWriter("Test-half-search-ref-blocks.txt");
-    	myHWriter.write("startPos = " + Arrays.toString(startPos) + "\n");
-    	int countSearchBlock = 0;
     	
     	double minMSD = Double.MAX_VALUE;
     	
@@ -221,28 +167,10 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     			int refPosY = startPos[0] - (dist - (y * dist));
     			int refPosX = startPos[1] - (dist - (x * dist));
     			
-    			// REMOVETHIS
-    			countSearchBlock++;
-    			myHWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
-    			myHWriter.write("refPosY = " + refPosY + " and refPosX = " + refPosX + "\n");
-    			
-    			System.out.println("refPosY = " + refPosY + " and refPosX = " + refPosX + "\n"); // REMOVETHIS
-    			
     			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
-    				myHWriter.write("valid\n"); // REMOVETHIS
     				
     				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
     				
-    				// REMOVETHIS
-            		for (int j = 0; j < blockHeight; j++) {
-            			for (int i = 0; i < blockWidth; i++) {
-            				String padded = String.format("%03d", refBlock[j][i]);
-            				myHWriter.write(padded + " ");
-            			}
-            			myHWriter.write("\n");
-            		}
-            		myHWriter.write("\n");
-            		
             		int SSD = getSSD(tarBlock, refBlock);
             		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
             		
@@ -252,20 +180,14 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             			/* the position of the top left pixel of 
             			 * the best matching block in the reference image
             			 */
-            			System.out.println("Inside minMSD conditional, refPosY = " + refPosY + " and refPosX = " + refPosX + "\n"); // REMOVETHIS
-            			
             			bestPos[0] = refPosY;
                 		bestPos[1] = refPosX;
             		}
-    			} else {
-    				// REMOVETHIS
-    				myHWriter.write("INvalid\n");
     			}
     			
     		}
     	}
     	
-    	myHWriter.close(); // REMOVETHIS
     	return minMSD;
     }
 
@@ -339,14 +261,6 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     				refBlock[row][col] = refFrame[refPosY + row][refPosX + col];
     			}
     		}
-    		
-    		/* REMOVETHIS?
-    		for (int j = refPosY; j < refPosY + blockHeight; j++) {
-        		for (int i = refPosX; i < refPosX + blockWidth; i++) {
-        			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
-        		}
-        	}
-        	*/
     	}
     }
 

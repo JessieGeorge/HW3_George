@@ -15,8 +15,9 @@ conductFastMotionCompensation method also prints number of matches performed.
 MotionCompensation.java:
 Moved searcher instantiation so I could pass relevant params.
 
-searchCompensate method calls a type of search method based on user's choice of type.
-Fast Search / Full Search, Half-pel.
+searchCompensate method calls a type of search method based on 
+user's choice: Fast Search or Full Search. Half-pel after if specified.
+It also calculates the motion vector and residual.
 
 image2Frame method uses grayscale equation from Canvas.
 frame2Image self-explanatory.
@@ -25,8 +26,7 @@ normalizeResidual method uses scaledError equation from Canvas.
 
 getBlock, setBlock self-explanatory.
 
-saveMotion method: the order of motion vector is x,y as per
-sample output.
+saveMotion method: the order of motion vector is x,y as per sample output.
 
 -----------------------
 BlockMotionSearch.java:
@@ -42,14 +42,20 @@ Sets best position based on minimum MSD.
 fastSearch method considers 8 neighbors at a distance, 
 the distance is halved each time and stops distance when dist = 0. 
 It considers the center only the first time, for efficiency.
-The start position is set to the position of the best matching frame from the previous round.
+The start position is set to the position of 
+the best matching frame from the previous round.
 
-halfSearch method refines the output. It uses the best match from Full-pel.
-It converts coordinates as needed. It checks 8 immediate neighbors.
+halfSearch method refines the output. 
+It starts with the best match position from Full-pel.
+It converts coordinates as needed. 
+It checks 8 immediate neighbors.
 
-isValidBlockPos checks if the coordinates of a block are valid within the frame dimensions. 
+isValidBlockPos checks if the coordinates of a block are 
+valid within the frame dimensions.
+It converts as required for half-pel. 
 
 getRefBlock gets a block from the reference frame.
+It interpolates as required for half-pel.
 
 getSSD method gets the sum of square difference as an integer.
 This is used to calculate MSD.

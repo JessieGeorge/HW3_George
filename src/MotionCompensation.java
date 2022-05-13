@@ -10,7 +10,6 @@
  *******************************************************/
 
 import java.io.*;
-import java.util.Arrays; // REMOVETHIS?
 
 public class MotionCompensation {
     private BlockMotionSearch searcher;
@@ -80,22 +79,10 @@ public class MotionCompensation {
         searchFast = optFast;
         searchSubPel = optSub;
         
-        // REMOVETHIS
-        System.out.println("width = " + width);
-        System.out.println("frameWidth = " + frameWidth);
-        System.out.println("height = " + height);
-        System.out.println("frameHeight = " + frameHeight);
-        System.out.println("blockWidth = " + blockWidth);
-        System.out.println("blockHeight = " + blockHeight);
-        System.out.println("numBlockInX = " + numBlockInX);
-        System.out.println("numBlockInY = " + numBlockInY);
-        System.out.println("searchLimit = " + searchLimit);
-        System.out.println("searchFast = " + searchFast);
-        System.out.println("searchSubPel = " + searchSubPel);
         return 0;
     }
 
-    // TOFIX - add code to search and compensate one frame
+    // Search and compensate one frame
     protected void searchCompensate(final int referenceFrame[][], final int targetFrame[][], int motionVectors[][][],
             int residualFrame[][]) throws IOException {
     	
@@ -128,7 +115,6 @@ public class MotionCompensation {
 		    	
 		    	if (searchSubPel == 1) {
 		    		subLevel = 1;
-		    		System.out.println("subLevel in searchSubPel conditional = " + subLevel); // REMOVETHIS
 		    		
 		    		fullPelBestPos[0] = bestPos[0];
 		    		fullPelBestPos[1] = bestPos[1];
@@ -136,17 +122,14 @@ public class MotionCompensation {
 		    		int originalFullPelBestY = bestPos[0];
 		    		int originalFullPelBestX = bestPos[1];
 	        		double halfPelMinMSD = searcher.halfSearch(referenceFrame, tarBlock, fullPelBestPos, bestPos);
-	        		System.out.println("Got out of halfSearch and bestPos = " + Arrays.toString(bestPos)); // REMOVETHIS
 	        		
 	        		if (fullPelMinMSD < halfPelMinMSD) {
 	        			// stick with the full-pel match
 	        			bestPos[0] = originalFullPelBestY;
 	        			bestPos[1] = originalFullPelBestX;
 	        			subLevel = 0;
-	        			System.out.println("subLevel in checking fullPelMinMSD conditional = " + subLevel); // REMOVETHIS
 	        		} // else go ahead with the half-pel match i.e bestPos was updated in halfSearch function
 	        		
-	        		System.out.println("Checked fullPelMinMSD too. bestPos = " + Arrays.toString(bestPos)); // REMOVETHIS
 		    	}
 		    	
 		    	// motion vector
@@ -161,7 +144,6 @@ public class MotionCompensation {
         		motionVectors[numBlockY][numBlockX][0] = dx;
         		motionVectors[numBlockY][numBlockX][1] = dy;
         		
-        		System.out.println("subLevel before residual = " + subLevel); // REMOVETHIS
         		// residual
         		if (subLevel == 1) {
         			// gotta convert bestPos so that getBlock doesn't go out of bounds for half-pel
@@ -221,10 +203,6 @@ public class MotionCompensation {
     // Normalize residual frame
     protected void normalizeResidual(int resFrame[][], int minError, int maxError) throws IOException {
     	
-    	// REMOVETHIS
-    	System.out.println("maxError = " + maxError);
-    	System.out.println("minError = " + minError);
-    	
     	int scaledError = 0;
     	double range = maxError - minError; // double type for division
     	for (int y = 0; y < frameHeight; y++) {
@@ -233,18 +211,6 @@ public class MotionCompensation {
     			resFrame[y][x] = scaledError; 
     		}
     	}
-    	
-    	// REMOVETHIS
-    	FileWriter myResWriter = new FileWriter("Test-scaled-residual-frame.txt"); 
-		for (int y = 0; y < frameHeight; y++) {
-			for (int x = 0; x < frameWidth; x++) {
-				String padded = String.format("%03d", resFrame[y][x]);
-				 myResWriter.write(padded + " ");
-			}
-			myResWriter.write("\n");
-		}
-		myResWriter.write("\n");
-		myResWriter.close();
     }
 
     // Get one block from frame
