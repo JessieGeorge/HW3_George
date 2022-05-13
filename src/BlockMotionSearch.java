@@ -199,7 +199,6 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	double minMSD = Double.MAX_VALUE;
     	
-    	// convert Full-pel to Half-pel
     	startPos[0] *= 2;
     	startPos[1] *= 2;
     	
@@ -274,9 +273,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	if (subLevel == 1) {
     		// half-pel
-    		// TODO: something for half-pel?
-            return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
-            		&& (blkPosY >= 0 && blkPosY <= (frameHeight - blockHeight));
+            return (blkPosX/2 >= 0 && blkPosX/2 <= (frameWidth - blockWidth)) 
+            		&& (blkPosY/2 >= 0 && blkPosY/2 <= (frameHeight - blockHeight));
     	} else {
     		// full-pel
     		return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
@@ -290,20 +288,62 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	if (subLevel == 1) {
     		// half-pel
-    		// TODO: something for half-pel?
-    		for (int j = refPosY; j < refPosY + blockHeight; j++) {
-        		for (int i = refPosX; i < refPosX + blockWidth; i++) {
-        			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
-        		}
-        	}
+    		
+    		// q stands for quotient, m stands for mod
+    		int Xq = refPosX / 2;
+    		int Xm = refPosX % 2;
+    		int Yq = refPosY / 2;
+    		int Ym = refPosY % 2;
+    		
+    		for (int row = 0; row < blockHeight; row++) {
+    			for (int col = 0; col < blockWidth; col++) {
+    				
+    				boolean interpolated = false;
+    				
+    				if (Xm == 1 && Ym == 0) {
+    					if (isValidBlockPos(Xq + col + 1, Yq + row, 0)) {
+    						// sending subLevel 0 to isValidBlockPos because we already did conversion for Xq, Yq at their initialization.
+    						refBlock[row][col] = (refFrame[Yq + row][Xq + col] + refFrame[Yq + row][Xq + col + 1]) / 2;
+    						interpolated = true;
+    					}
+    				} else if (Xm == 0 && Ym == 1) {
+    					if (isValidBlockPos(Xq + col, Yq + row + 1, 0)) {
+    						// sending subLevel 0 to isValidBlockPos because we already did conversion for Xq, Yq at their initialization.
+    						refBlock[row][col] = (refFrame[Yq + row][Xq + col] + refFrame[Yq + row + 1][Xq + col]) / 2;
+    						interpolated = true;
+    					}
+    				} else if (Xm == 1 && Ym == 1) {
+    					if (isValidBlockPos(Xq + col + 1, Yq + row + 1, 0)) {
+    						refBlock[row][col] = (refFrame[Yq + row][Xq + col] 
+												+ refFrame[Yq + row][Xq + col + 1]
+												+ refFrame[Yq + row + 1][Xq + col] 
+												+ refFrame[Yq + row + 1][Xq + col + 1]) / 4;
+    						interpolated = true;
+    					}
+    				} 
+    				
+    				if (!interpolated || (Xm==0 && Ym==0)){
+    					refBlock[row][col] = refFrame[Yq + row][Xq + col];
+    				}
+    			}
+    		}
     		
     	} else {
     		// full-pel
+    		
+    		for (int row = 0; row < blockHeight; row++) {
+    			for (int col = 0; col < blockWidth; col++) {
+    				refBlock[row][col] = refFrame[refPosY + row][refPosX + col];
+    			}
+    		}
+    		
+    		/* REMOVETHIS?
     		for (int j = refPosY; j < refPosY + blockHeight; j++) {
         		for (int i = refPosX; i < refPosX + blockWidth; i++) {
         			refBlock[j - refPosY][i - refPosX] = refFrame[j][i];
         		}
         	}
+        	*/
     	}
     }
 

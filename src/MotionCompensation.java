@@ -150,7 +150,9 @@ public class MotionCompensation {
         				resBlock[j][i] = err;
         				if (err < minError) {
         					minError = err;
-        				} else if (err > maxError) {
+        				} 
+        				
+        				if (err > maxError) {
         					maxError = err;
         				}
         			}
