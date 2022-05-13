@@ -107,8 +107,6 @@ public class MotionCompensation {
         int minError = Integer.MAX_VALUE;
         int maxError = 0;
         
-        boolean havePrevBest = false; // Fast Search: have the best position of the previous round of neighbor comparisons
-        
         double fullPelMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
         
         for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
@@ -119,43 +117,7 @@ public class MotionCompensation {
         		currPos[1] = x;
         		
 		    	if (searchFast == 1) {
-		    		boolean useCenter = true; // only the first time. It's reinitialized inside the while loop.
-	        		int dist = searchLimit * 2; // because we're dividing after this
-	        		int v, u;
-	        		while(true) {
-	        			
-	        			dist = dist / 2;
-	            		if (dist == 0) {
-	            			break;
-	            		}
-	            		
-	        			if (havePrevBest) {
-	        				v = bestPos[0];
-	        				u = bestPos[1];
-	        				
-	        				getBlock(targetFrame, tarBlock, u, v);
-		            		currPos[0] = v;
-		            		currPos[1] = u;
-	        			} // else you already set it above with x and y
-	        			
-	            		fullPelMinMSD = searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos, dist, useCenter);
-	            		useCenter = false;
-	            		havePrevBest = true;
-	            		
-	            		/*
-	            		// REMOVETHIS
-	            		mvBWriter.write("BLOCK #" + countBlocks + "\n");
-	            		for (int j = 0; j < blockHeight; j++) {
-	            			for (int i = 0; i < blockWidth; i++) {
-	            				String padded = String.format("%03d", tarBlock[j][i]);
-	            				mvBWriter.write(padded + " ");
-	            			}
-	            			mvBWriter.write("\n");
-	            		}
-	            		mvBWriter.write("\n");
-	            		*/
-	            		
-	                }
+		    		fullPelMinMSD = searcher.fastSearch(referenceFrame, tarBlock, currPos, bestPos);
 		    	} else {
 		    		fullPelMinMSD = searcher.fullSearch(referenceFrame, tarBlock, currPos, bestPos);
 		    	}

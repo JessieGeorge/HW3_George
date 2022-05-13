@@ -103,70 +103,86 @@ public class BlockMotionSearch {
     }
 
     // logarithmic motion search for one target block
-    public double fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[], int dist, boolean useCenter) throws IOException {
-    	int[][] refBlock = new int[blockHeight][blockWidth];
+    public double fastSearch(final int refFrame[][], final int tarBlock[][], final int startPos[], int bestPos[]) throws IOException {
+
+    	boolean havePrevBest = false; // have the best position of the previous round of neighbor comparisons
+		boolean useCenter = true; // only the first time. It's reinitialized inside the while loop.
+		int dist = searchLimH; // because only need to use one since the limits are equal
+		int[][] refBlock = new int[blockHeight][blockWidth];
+		double minMSD = Double.MAX_VALUE;
+		
+		// REMOVETHIS
+    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt");
     	
-    	// REMOVETHIS
-    	FileWriter myFWriter = new FileWriter("Test-fast-search-ref-blocks.txt"); 
-    	int countSearchBlock = 0;
-    	
-    	double minMSD = Double.MAX_VALUE;
-    	
-    	for (int y = 0; y < 3; y++) {
-    		for (int x = 0; x < 3; x++) {
-    			
-    			if (y == 1 && x == 1 && !useCenter) {
-    				/*
-    				 *  don't consider the center, 
-    				 *  because we already considered it when we
-    				 *  got the best match in the previous round
-    				 */
-    				continue;
-    			}
-    			
-    			int refPosY = startPos[0] - (dist - (y * dist));
-    			int refPosX = startPos[1] - (dist - (x * dist));
-    			
-    			int subLevel = 0;
-    			
-    			// REMOVETHIS
-    			countSearchBlock++;
-    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
-    			
-    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
-    				myFWriter.write("valid\n"); // REMOVETHIS
-    				
-    				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
-    				
-    				// REMOVETHIS
-            		for (int j = 0; j < blockHeight; j++) {
-            			for (int i = 0; i < blockWidth; i++) {
-            				String padded = String.format("%03d", refBlock[j][i]);
-            				myFWriter.write(padded + " ");
-            			}
-            			myFWriter.write("\n");
-            		}
-            		myFWriter.write("\n");
-            		
-            		int SSD = getSSD(tarBlock, refBlock);
-            		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
-            		
-            		// best match
-            		if (MSD < minMSD) {
-            			minMSD = MSD;
-            			/* the position of the top left pixel of 
-            			 * the best matching block in the reference image
-            			 */
-            			bestPos[0] = refPosY;
-                		bestPos[1] = refPosX;
-            		}
-    			} else {
-    				// REMOVETHIS
-    				myFWriter.write("INvalid\n");
-    			}
-    			
-    		}
-    	}
+		while(dist > 0) {
+			int countSearchBlock = 0; // REMOVETHIS
+			
+			if (havePrevBest) {
+				// start from the previous best
+				startPos[0] = bestPos[0];
+				startPos[1] = bestPos[1];
+			} 
+			
+			for (int y = 0; y < 3; y++) {
+	    		for (int x = 0; x < 3; x++) {
+	    			
+	    			if (y == 1 && x == 1 && !useCenter) {
+	    				/*
+	    				 *  don't consider the center, 
+	    				 *  because we already considered it when we
+	    				 *  got the best match in the previous round
+	    				 */
+	    				continue;
+	    			}
+	    			
+	    			int refPosY = startPos[0] - (dist - (y * dist));
+	    			int refPosX = startPos[1] - (dist - (x * dist));
+	    			
+	    			int subLevel = 0;
+	    			
+	    			// REMOVETHIS
+	    			countSearchBlock++;
+	    			myFWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
+	    			
+	    			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
+	    				myFWriter.write("valid\n"); // REMOVETHIS
+	    				
+	    				getRefBlock(refFrame, refBlock, refPosX, refPosY, subLevel); 
+	    				
+	    				// REMOVETHIS
+	            		for (int j = 0; j < blockHeight; j++) {
+	            			for (int i = 0; i < blockWidth; i++) {
+	            				String padded = String.format("%03d", refBlock[j][i]);
+	            				myFWriter.write(padded + " ");
+	            			}
+	            			myFWriter.write("\n");
+	            		}
+	            		myFWriter.write("\n");
+	            		
+	            		int SSD = getSSD(tarBlock, refBlock);
+	            		double MSD = SSD / (blockHeight * blockWidth); // mean square difference
+	            		
+	            		// best match
+	            		if (MSD < minMSD) {
+	            			minMSD = MSD;
+	            			/* the position of the top left pixel of 
+	            			 * the best matching block in the reference image
+	            			 */
+	            			bestPos[0] = refPosY;
+	                		bestPos[1] = refPosX;
+	            		}
+	    			} else {
+	    				// REMOVETHIS
+	    				myFWriter.write("INvalid\n");
+	    			}
+	    			
+	    		}
+	    	}
+			
+			useCenter = false;
+    		havePrevBest = true;
+    		dist = dist / 2;
+        }
     	
     	myFWriter.close(); // REMOVETHIS
     	return minMSD;
