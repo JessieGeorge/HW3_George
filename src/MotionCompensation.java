@@ -107,7 +107,9 @@ public class MotionCompensation {
         int minError = Integer.MAX_VALUE;
         int maxError = 0;
         
-        double fullPelMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
+        // full-pel result helpful for half-pel
+        double fullPelMinMSD = Integer.MAX_VALUE;  
+        int[] fullPelBestPos = new int[2];
         
         int subLevel = 0;
         
@@ -126,24 +128,32 @@ public class MotionCompensation {
 		    	
 		    	if (searchSubPel == 1) {
 		    		subLevel = 1;
+		    		System.out.println("subLevel in searchSubPel conditional = " + subLevel); // REMOVETHIS
 		    		
-		    		currPos[0] = bestPos[0];
-	        		currPos[1] = bestPos[1];
-	        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
-	        		double halfPelMinMSD = searcher.halfSearch(referenceFrame, refBlock, currPos, bestPos);
+		    		fullPelBestPos[0] = bestPos[0];
+		    		fullPelBestPos[1] = bestPos[1];
+		    		// save a copy that doesn't get modified by halfSearch function
+		    		int originalFullPelBestY = bestPos[0];
+		    		int originalFullPelBestX = bestPos[1];
+	        		double halfPelMinMSD = searcher.halfSearch(referenceFrame, tarBlock, fullPelBestPos, bestPos);
+	        		System.out.println("Got out of halfSearch and bestPos = " + Arrays.toString(bestPos)); // REMOVETHIS
 	        		
 	        		if (fullPelMinMSD < halfPelMinMSD) {
 	        			// stick with the full-pel match
-	        			bestPos[0] = currPos[0];
-	        			bestPos[1] = currPos[1];
+	        			bestPos[0] = originalFullPelBestY;
+	        			bestPos[1] = originalFullPelBestX;
 	        			subLevel = 0;
+	        			System.out.println("subLevel in checking fullPelMinMSD conditional = " + subLevel); // REMOVETHIS
 	        		} // else go ahead with the half-pel match i.e bestPos was updated in halfSearch function
+	        		
+	        		System.out.println("Checked fullPelMinMSD too. bestPos = " + Arrays.toString(bestPos)); // REMOVETHIS
 		    	}
 		    	
 		    	// motion vector
 		    	/* If it's half-pel, subLevel=1,
 		    	 * and left shift by 1 basically multiplies target coords by 2
 		    	 * to match bestPos because we doubled coords in the halfSearch function.
+		    	 * Coding this as per Professor's instructions.
 		    	 */
         		int dy = (y << subLevel) - bestPos[0];
         		int dx = (x << subLevel) - bestPos[1];
@@ -151,7 +161,13 @@ public class MotionCompensation {
         		motionVectors[numBlockY][numBlockX][0] = dx;
         		motionVectors[numBlockY][numBlockX][1] = dy;
         		
+        		System.out.println("subLevel before residual = " + subLevel); // REMOVETHIS
         		// residual
+        		if (subLevel == 1) {
+        			// gotta convert bestPos so that getBlock doesn't go out of bounds for half-pel
+        			bestPos[1] = (int)Math.round(bestPos[1]/2.0);
+        			bestPos[0] = (int)Math.round(bestPos[0]/2.0);
+        		}
         		getBlock(referenceFrame, refBlock, bestPos[1], bestPos[0]);
         		for (int j = 0; j < blockHeight; j++) {
         			for (int i = 0; i < blockWidth; i++) {

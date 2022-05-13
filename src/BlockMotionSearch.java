@@ -204,6 +204,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	int dist = 1; // immediate neighbors
     	
+    	int subLevel = 1;
+    	
     	for (int y = 0; y < 3; y++) {
     		for (int x = 0; x < 3; x++) {
     			
@@ -219,12 +221,12 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     			int refPosY = startPos[0] - (dist - (y * dist));
     			int refPosX = startPos[1] - (dist - (x * dist));
     			
-    			int subLevel = 1;
-    			
     			// REMOVETHIS
     			countSearchBlock++;
     			myHWriter.write("SEARCH BLOCK #" + countSearchBlock + "\n");
     			myHWriter.write("refPosY = " + refPosY + " and refPosX = " + refPosX + "\n");
+    			
+    			System.out.println("refPosY = " + refPosY + " and refPosX = " + refPosX + "\n"); // REMOVETHIS
     			
     			if(isValidBlockPos(refPosX, refPosY, subLevel)) {
     				myHWriter.write("valid\n"); // REMOVETHIS
@@ -250,6 +252,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             			/* the position of the top left pixel of 
             			 * the best matching block in the reference image
             			 */
+            			System.out.println("Inside minMSD conditional, refPosY = " + refPosY + " and refPosX = " + refPosX + "\n"); // REMOVETHIS
+            			
             			bestPos[0] = refPosY;
                 		bestPos[1] = refPosX;
             		}
@@ -271,8 +275,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     	
     	if (subLevel == 1) {
     		// half-pel
-            return (blkPosX/2 >= 0 && blkPosX/2 <= (frameWidth - blockWidth)) 
-            		&& (blkPosY/2 >= 0 && blkPosY/2 <= (frameHeight - blockHeight));
+            return (blkPosX/2.0 >= 0 && blkPosX/2.0 <= (frameWidth - blockWidth)) 
+            		&& (blkPosY/2.0 >= 0 && blkPosY/2.0 <= (frameHeight - blockHeight));
     	} else {
     		// full-pel
     		return (blkPosX >= 0 && blkPosX <= (frameWidth - blockWidth)) 
