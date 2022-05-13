@@ -250,10 +250,8 @@ int[][] refBlock = new int[blockHeight][blockWidth];
             			/* the position of the top left pixel of 
             			 * the best matching block in the reference image
             			 */
-            			
-            			// TODO: convert back to full pel by division, and interpolation if needed?
-            			bestPos[0] = (int)Math.round(refPosY / 2.0);
-                		bestPos[1] = (int)Math.round(refPosX / 2.0);
+            			bestPos[0] = refPosY;
+                		bestPos[1] = refPosX;
             		}
     			} else {
     				// REMOVETHIS
@@ -314,6 +312,7 @@ int[][] refBlock = new int[blockHeight][blockWidth];
     					}
     				} else if (Xm == 1 && Ym == 1) {
     					if (isValidBlockPos(Xq + col + 1, Yq + row + 1, 0)) {
+    						// sending subLevel 0 to isValidBlockPos because we already did conversion for Xq, Yq at their initialization.
     						refBlock[row][col] = (refFrame[Yq + row][Xq + col] 
 												+ refFrame[Yq + row][Xq + col + 1]
 												+ refFrame[Yq + row + 1][Xq + col] 

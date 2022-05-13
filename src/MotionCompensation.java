@@ -109,6 +109,8 @@ public class MotionCompensation {
         
         double fullPelMinMSD = Integer.MAX_VALUE; // full-pel result helpful for half-pel 
         
+        int subLevel = 0;
+        
         for (int y = 0, numBlockY = 0; y < frameHeight && numBlockY < numBlockInY; y += blockHeight, numBlockY++) {
         	for (int x = 0, numBlockX = 0; x < frameWidth && numBlockX < numBlockInX; x += blockWidth, numBlockX++) {
         		
@@ -123,6 +125,8 @@ public class MotionCompensation {
 		    	}
 		    	
 		    	if (searchSubPel == 1) {
+		    		subLevel = 1;
+		    		
 		    		currPos[0] = bestPos[0];
 	        		currPos[1] = bestPos[1];
 	        		getBlock(referenceFrame, refBlock, currPos[1], currPos[0]);
@@ -132,12 +136,17 @@ public class MotionCompensation {
 	        			// stick with the full-pel match
 	        			bestPos[0] = currPos[0];
 	        			bestPos[1] = currPos[1];
+	        			subLevel = 0;
 	        		} // else go ahead with the half-pel match i.e bestPos was updated in halfSearch function
 		    	}
 		    	
 		    	// motion vector
-        		int dy = y - bestPos[0];
-        		int dx = x - bestPos[1];
+		    	/* If it's half-pel, subLevel=1,
+		    	 * and left shift by 1 basically multiplies target coords by 2
+		    	 * to match bestPos because we doubled coords in the halfSearch function.
+		    	 */
+        		int dy = (y << subLevel) - bestPos[0];
+        		int dx = (x << subLevel) - bestPos[1];
         		// keeping order of Professor's sample output
         		motionVectors[numBlockY][numBlockX][0] = dx;
         		motionVectors[numBlockY][numBlockX][1] = dy;
